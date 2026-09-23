@@ -37,12 +37,16 @@ const DEFAULT_STATE = {
   endedAt: null,
   typedText: '',
   pastedText: '',
+  typedWords: 0,   // derived; persisted so content scripts can read without recomputing
+  pastedWords: 0,  // derived
   lastResult: null,
 };
 
 const DEFAULT_SETTINGS = {
   onboarded: false,
   pasteMode: 'separate',
+  counterPos: null,     // { x, y } px from top-left; null → default bottom-right
+  counterHidden: false, // reserved: future manual hide toggle
 };
 
 // ---------- storage helpers ----------
@@ -53,8 +57,16 @@ async function getState() {
 }
 
 async function setState(next) {
-  await chrome.storage.local.set({ [STATE_KEY]: next });
-  broadcastState(next).catch(() => {});
+  // Derive word counts once at write time so content scripts (and any other
+  // consumers) can read them straight from chrome.storage without needing
+  // access to the word-counting function.
+  const withDerived = {
+    ...next,
+    typedWords: countWords(next.typedText || ''),
+    pastedWords: countWords(next.pastedText || ''),
+  };
+  await chrome.storage.local.set({ [STATE_KEY]: withDerived });
+  broadcastState(withDerived).catch(() => {});
 }
 
 async function getSettings() {

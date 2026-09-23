@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Floating counter preview</title>
+<style>
+  body {
+    margin: 0;
+    padding: 40px;
+    min-height: 100vh;
+    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    background: #fafafa;
+    color: #111;
+  }
+  .doc {
+    max-width: 720px;
+    margin: 0 auto;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+  }
+  h1 { margin-top: 0; }
+  textarea {
+    width: 100%; min-height: 220px; padding: 16px; font-size: 15px;
+    border-radius: 10px; border: 1px solid #d5d9e4; font-family: inherit;
+    line-height: 1.5;
+  }
+  .controls { margin-top: 16px; display: flex; gap: 8px; }
+  button { padding: 8px 14px; border-radius: 8px; border: 1px solid #d5d9e4;
+           background: white; cursor: pointer; }
+</style>
+</head>
+<body>
+  <div class="doc">
+    <h1>Floating counter preview</h1>
+    <p>This page shims <code>chrome.*</code> APIs to preview the on-screen counter without loading the real extension.</p>
+    <textarea placeholder="Type here to see the counter update…"></textarea>
+    <div class="controls">
+      <button id="start">Start session</button>
+      <button id="stop">Stop session</button>
+      <button id="mode">Toggle paste mode</button>
+    </div>
+  </div>
+
+  <script>
+    // Mini in-page chrome.* shim so content.js can run standalone.
+    const state = {
+      wc_state: {
+        active: false, startedAt: null, endedAt: null,
+        typedText: '', pastedText: '',
+        typedWords: 0, pastedWords: 0, lastResult: null,
+      },
+      wc_settings: { onboarded: true, pasteMode: 'separate', counterPos: null },
+    };
+    const changeListeners = [];
+    const messageListeners = [];
+
+    function countWords(t) {
+      if (!t) return 0;
+      const s = t.replace(/\s+/g, ' ').trim();
+      return s ? s.split(' ').length : 0;
+    }
+
+    function setStorage(key, value) {
+      const oldValue = state[key];
+      state[key] = value;
+      const changes = { [key]: { oldValue, newValue: value } };
+      changeListeners.forEach(fn => { try { fn(changes, 'local'); } catch (_) {} });
+    }
+
+    window.chrome = {
+      runtime: {
+        lastError: undefined,
+        sendMessage(msg, cb) {
+          setTimeout(() => {
+            let resp = { ok: true };
+            if (msg.type === 'IS_ACTIVE') resp = { ok: true, active: state.wc_state.active };
+            if (msg.type === 'DELTA') {
+              const s = { ...state.wc_state };
+              if (msg.delta.kind === 'typed')  s.typedText  = (s.typedText  || '') + (msg.delta.added || '');
+              if (msg.delta.kind === 'pasted') s.pastedText = (s.pastedText || '') + (msg.delta.added || '');
+              if (msg.delta.kind === 'deleted') {
+                let n = msg.delta.removed || 0;
+                const t = Math.min(n, s.typedText.length);
+                s.typedText = s.typedText.slice(0, s.typedText.length - t);
+                n -= t;
+                if (n > 0) s.pastedText = s.pastedText.slice(0, s.pastedText.length - Math.min(n, s.pastedText.length));
+              }
+              s.typedWords  = countWords(s.typedText);
+              s.pastedWords = countWords(s.pastedText);
+              setStorage('wc_state', s);
+            }
+            if (msg.type === 'STOP_SESSION') {
+              setStorage('wc_state', { ...state.wc_state, active: false, endedAt: Date.now() });
+            }
+            if (msg.type === 'SET_SETTINGS') {
+              setStorage('wc_settings', { ...state.wc_settings, ...(msg.settings || {}) });
+            }
+            cb && cb(resp);
+          }, 0);
+        },
+        onMessage: { addListener(fn) { messageListeners.push(fn); } },
+      },
+      storage: {
+        local: {
+          get(keys, cb) {
+            const out = {};
+            (Array.isArray(keys) ? keys : [keys]).forEach(k => out[k] = state[k]);
+            cb(out);
+          },
+          set(obj, cb) {
+            Object.keys(obj).forEach(k => setStorage(k, obj[k]));
+            cb && cb();
+          },
+        },
+        onChanged: { addListener(fn) { changeListeners.push(fn); } },
+      },
+    };
+
+    document.getElementById('start').onclick = () => setStorage('wc_state', { ...state.wc_state, active: true, startedAt: Date.now(), typedText:'', pastedText:'', typedWords:0, pastedWords:0 });
+    document.getElementById('stop').onclick  = () => setStorage('wc_state', { ...state.wc_state, active: false, endedAt: Date.now() });
+    document.getElementById('mode').onclick  = () => setStorage('wc_settings', { ...state.wc_settings, pasteMode: state.wc_settings.pasteMode === 'separate' ? 'as_typed' : 'separate' });
+  </script>
+  <script src="../content.js"></script>
+</body>
+</html>

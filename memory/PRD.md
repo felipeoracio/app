@@ -57,6 +57,13 @@ must be modular so future phases plug in cleanly.
 - 13 unit tests passing (`node tests/engine.test.js`).
 - README with install steps, architecture diagram, privacy notes, known
   limitations, and manual test checklist.
+- **On-screen floating counter** (this iteration): Shadow-DOM overlay
+  injected by `content.js`, showing `● N words` in the bottom-right of
+  every supported page while a session is active. Draggable with position
+  persisted in `wc_settings.counterPos`. Click-to-expand reveals a
+  Stop Session button. Fully synchronized with the popup via
+  `chrome.storage.onChanged`. Auto light/dark, keyboard accessible,
+  cross-tab consistent.
 
 ## Known limitations (documented in README)
 

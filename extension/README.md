@@ -29,6 +29,10 @@ Chrome, click **Stop Session** — see exactly how many words you wrote.
 ## Features
 
 - **One-click session** — Start / Stop with a single button.
+- **On-screen floating counter** — While a session is active, a small
+  draggable pill (`● 1,247 words`) sits in the bottom-right corner of every
+  supported page and updates as you type. Click it to reveal a **Stop
+  Session** button; drag it anywhere and its position is remembered.
 - **Runs in the background** — Keep writing across tabs and pages; the popup
   can close and reopen without stopping the session.
 - **Typed vs pasted, your choice** — On first run, decide whether pasted text
@@ -60,12 +64,13 @@ Chrome, click **Stop Session** — see exactly how many words you wrote.
 │ (content.js)       │  { kind: 'typed'|'pasted'|   │ worker             │
 │ · listens for      │    'deleted', ... }          │ (background.js)    │
 │   input events     │                              │ · owns session     │
-│ · classifies via   │                              │   state            │
-│   InputEvent.      │                              │ · persists to      │
+│ · classifies via   │ ◀─────────── STATE_UPDATE ── │   state            │
+│   InputEvent.      │  (via chrome.storage sync)   │ · persists to      │
 │   inputType        │                              │   chrome.storage   │
-│ · computes deltas  │                              │ · word counting    │
-└────────────────────┘                              └──────────┬─────────┘
-                                                               │
+│ · renders floating │                              │ · word counting    │
+│   overlay (shadow  │                              │   engine           │
+│   DOM)             │                              └──────────┬─────────┘
+└────────────────────┘                                         │
                                             STATE_UPDATE / GET_STATE
                                                                ▼
                                                     ┌────────────────────┐
@@ -77,6 +82,10 @@ Chrome, click **Stop Session** — see exactly how many words you wrote.
                                                     │   settings         │
                                                     └────────────────────┘
 ```
+
+Both the popup and the on-screen floating counter read from the **same
+`chrome.storage.local` state**, so a Stop from either surface updates the
+other immediately. There is one source of truth: `wc_state`.
 
 ### Session lifecycle
 
@@ -127,7 +136,7 @@ breaks all collapse to a single word boundary.
 extension/
 ├── manifest.json          ← MV3 manifest
 ├── background.js          ← service worker (session state + word counting)
-├── content.js             ← injected into pages, reports typing deltas
+├── content.js             ← per-page: typing pipeline + floating overlay
 ├── popup/
 │   ├── popup.html         ← UI markup (idle / active / done / onboarding / settings)
 │   ├── popup.css          ← premium minimal styles, auto light/dark
@@ -136,12 +145,51 @@ extension/
 │   ├── icon16.png · 32 · 48 · 128
 │   └── generate_icons.py  ← rebuilds icons if you tweak brand colors
 ├── tests/
-│   └── engine.test.js     ← unit tests for countWords + applyDelta
+│   ├── engine.test.js     ← unit tests for countWords + applyDelta
+│   └── preview.html       ← standalone visual preview of the floating counter
 └── README.md
 ```
 
 Nothing is a "kitchen-sink" file: each module has one clear job. The word
 counter is a pure function, easy to reuse in future phases.
+
+---
+
+## The floating on-screen counter
+
+While a session is active, `content.js` injects a small overlay into every
+supported page:
+
+```
+● 1,247 words  ⋮⋮
+```
+
+- **Isolated** — Rendered inside a Shadow DOM so no host-page CSS can leak
+  in and it can never affect the page's layout. Uses `position: fixed`
+  with a `z-index` at the top of the stacking context. It does **not**
+  push page content, resize text fields, or interfere with scroll,
+  selection, copy/paste, or typing.
+- **Draggable** — Click and drag anywhere on the pill to move it. The
+  position is stored in `chrome.storage.local` under
+  `wc_settings.counterPos` and restored on every page.
+- **Click to expand** — A single click reveals a **Stop Session** button.
+  Click again (or press Escape) to collapse.
+- **Auto light/dark** — Follows `prefers-color-scheme`, matching the popup.
+- **Only when active** — Mounts on session start, unmounts immediately on
+  stop. Never appears on Chrome-restricted pages (`chrome://…`, Web
+  Store), which simply lose the overlay until the user returns to a
+  supported page.
+- **Cross-tab sync** — All tabs see the same session because they all read
+  from the same `chrome.storage.local` and listen to `storage.onChanged`.
+- **Accessible** — `role="button"`, keyboard-focusable, Enter/Space
+  toggles expand, Escape collapses, sufficient contrast in both themes.
+
+### Sizing / responsiveness
+
+Default position is bottom-right with 20px viewport padding. Padding and
+type-size compress slightly on viewports narrower than 480px. If the
+window is resized so the counter would fall off-screen, it snaps back
+inside the viewport.
 
 ---
 
@@ -229,31 +277,51 @@ Suggested run-through before shipping any change:
 - [ ] Pick "Keep separate" — session panel appears in idle state.
 - [ ] Click **Start Session** — button flips to red "Stop Session", pill
       turns green with "Writing Session", duration begins ticking.
-- [ ] Type a sentence in a textarea on any page (e.g.
-      [https://example.com](https://example.com) has none — use
-      Google, GitHub issue box, Gmail compose, etc). Reopen popup — count
-      reflects what you typed.
+- [ ] Type a sentence in a textarea on any page (e.g. Google, GitHub
+      issue box, Gmail compose). Reopen popup — count reflects what you
+      typed.
 - [ ] Paste a sentence — the small line "+ N pasted" appears.
 - [ ] Delete a word — count decreases.
 - [ ] Click **Stop Session** — pill flips to "Session complete", final
       count and duration are shown, button becomes **Start New Session**.
+
+**On-screen floating counter**
+
+- [ ] After **Start Session**, a small `● N words` pill appears in the
+      bottom-right of the page.
+- [ ] Number updates as you type.
+- [ ] Click the pill — a **Stop Session** button appears below the count.
+- [ ] Click the pill again (or press Escape) — the button collapses.
+- [ ] Drag the pill anywhere on the page — it stays where you dropped it.
+- [ ] Navigate to another supported page — the pill re-appears in the
+      same position you dragged it to.
+- [ ] Click the pill's **Stop Session** — the pill disappears everywhere
+      and the popup shows "Session complete".
+- [ ] Alternatively, click **Stop Session** in the popup — the on-screen
+      pill disappears immediately.
 
 **Persistence**
 
 - [ ] Close the popup mid-session, keep typing, reopen — count is up to
       date.
 - [ ] Navigate to another page mid-session — session stays active.
-- [ ] Reload the tab mid-session — session stays active.
+- [ ] Reload the tab mid-session — session stays active, pill reappears.
 
 **Settings**
 
 - [ ] Click the gear icon. Change to "Count pasted as typed" — big
-      number now shows the combined total.
+      number in popup and pill both switch to combined total.
 
 **Unsupported pages**
 
-- [ ] Open `chrome://extensions` — the extension can't inject there;
-      typing does nothing (expected).
+- [ ] Open `chrome://extensions` — no pill (expected, Chrome forbids
+      content scripts there). Session remains active.
+- [ ] Switch back to a supported tab — pill reappears.
+
+**Multi-tab**
+
+- [ ] Open two tabs on supported pages during a session — both show the
+      same pill, same count. Typing in either tab updates both.
 
 ---
 
@@ -268,6 +336,19 @@ node tests/engine.test.js
 ```
 
 Should print `13 passed, 0 failed`.
+
+For a live visual test of the floating on-screen counter without loading
+the full extension, serve the folder and open the preview page:
+
+```bash
+cd extension
+python3 -m http.server 7777
+# then visit http://127.0.0.1:7777/tests/preview.html
+```
+
+The preview shims `chrome.*` APIs so `content.js` runs in a normal tab.
+Click **Start session** and type in the textarea to see the counter
+appear, update, drag, and expand.
 
 ---
 
