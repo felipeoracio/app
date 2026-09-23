@@ -8,27 +8,33 @@
   </head>
   <body data-theme="auto">
     <main class="wc" data-testid="wc-popup">
+
       <!-- ================= HEADER ================= -->
       <header class="wc__header">
         <div class="wc__brand" data-testid="wc-brand">
           <span class="wc__brand-mark" aria-hidden="true">
-            <!-- feather glyph -->
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 5c-4 0-9 2-12 6-2 3-3 6-3 9 3 0 6-1 9-3 4-3 6-8 6-12z"/>
               <path d="M4 20l6-6"/>
             </svg>
           </span>
-          <span class="wc__brand-name">Word Count</span>
+          <span class="wc__brand-name" data-i18n="brand.name">Word Count</span>
+          <span class="wc__pro-badge" id="pro-badge" data-testid="pro-badge" data-i18n="badge.pro" hidden>PRO</span>
         </div>
         <div class="wc__header-actions">
-          <button class="wc__icon-btn" id="history-btn" title="History" data-testid="history-btn" aria-label="History">
+          <button class="wc__icon-btn" id="dashboard-btn" data-testid="dashboard-btn" data-i18n-aria="header.dashboard" data-i18n-title="header.dashboard" aria-label="Dashboard" hidden>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12a9 9 0 1 0 3-6.7"/>
-              <polyline points="3 4 3 10 9 10"/>
-              <path d="M12 7v5l3 2"/>
+              <rect x="3" y="12" width="4" height="9"/>
+              <rect x="10" y="7" width="4" height="14"/>
+              <rect x="17" y="3" width="4" height="18"/>
             </svg>
           </button>
-          <button class="wc__icon-btn" id="settings-btn" title="Settings" data-testid="settings-btn" aria-label="Settings">
+          <button class="wc__icon-btn" id="history-btn" data-testid="history-btn" data-i18n-aria="header.history" data-i18n-title="header.history" aria-label="History">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 10 9 10"/><path d="M12 7v5l3 2"/>
+            </svg>
+          </button>
+          <button class="wc__icon-btn" id="settings-btn" data-testid="settings-btn" data-i18n-aria="header.settings" data-i18n-title="header.settings" aria-label="Settings">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3"/>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.14.69.36.96.65.27.29.44.65.51 1.03"/>
@@ -37,117 +43,289 @@
         </div>
       </header>
 
-      <!-- ================= ONBOARDING (first run) ================= -->
+      <!-- ================= PASTE-MODE ONBOARDING ================= -->
       <section class="wc__panel wc__onboarding" id="onboarding-panel" data-testid="onboarding-panel" hidden>
-        <h2 class="wc__eyebrow">Welcome</h2>
-        <p class="wc__title">How should pasted text be counted?</p>
-        <p class="wc__helper">You can change this later in settings.</p>
-        <div class="wc__choices" role="radiogroup" aria-label="Paste handling">
+        <h2 class="wc__eyebrow" data-i18n="paste.welcome">Welcome</h2>
+        <p class="wc__title" data-i18n="paste.question">How should pasted text be counted?</p>
+        <p class="wc__helper" data-i18n="paste.helper">You can change this later in settings.</p>
+        <div class="wc__choices">
           <button class="wc__choice" data-value="separate" data-testid="choice-separate">
-            <span class="wc__choice-title">Keep separate</span>
-            <span class="wc__choice-sub">Track typed and pasted words in two counts.</span>
+            <span class="wc__choice-title" data-i18n="paste.separateTitle">Keep separate</span>
+            <span class="wc__choice-sub" data-i18n="paste.separateSub">Track typed and pasted words in two counts.</span>
           </button>
           <button class="wc__choice" data-value="as_typed" data-testid="choice-as-typed">
-            <span class="wc__choice-title">Count pasted as typed</span>
-            <span class="wc__choice-sub">Combine everything into a single word count.</span>
+            <span class="wc__choice-title" data-i18n="paste.astypedTitle">Count pasted as typed</span>
+            <span class="wc__choice-sub" data-i18n="paste.astypedSub">Combine everything into a single word count.</span>
           </button>
         </div>
       </section>
 
+      <!-- ================= PROMPT (pro only) ================= -->
+      <section class="wc__panel wc__prompt" id="prompt-panel" data-testid="prompt-panel" hidden>
+        <div class="wc__prompt-head">
+          <span class="wc__eyebrow" data-i18n="prompt.today">Today's writing prompt</span>
+          <button class="wc__link-btn" id="prompt-another" data-testid="prompt-another" data-i18n="prompt.another">Another prompt</button>
+        </div>
+        <p class="wc__prompt-text" id="prompt-text" data-testid="prompt-text">…</p>
+        <p class="wc__prompt-goal" id="prompt-goal" data-testid="prompt-goal">Your goal: 250 words</p>
+        <div class="wc__prompt-empty" id="prompt-empty" data-testid="prompt-empty" hidden>
+          <p data-i18n="prompt.themesEmpty">Choose your themes to see a prompt.</p>
+          <button class="wc__link-btn" id="prompt-edit-themes" data-i18n="prompt.editThemes">Edit themes</button>
+        </div>
+      </section>
+
+      <!-- ================= MAIN SESSION VIEW ================= -->
+      <section class="wc__panel wc__session" id="session-panel" data-testid="session-panel">
+        <div class="wc__status wc__status--idle" id="status-idle" data-testid="status-idle">
+          <span class="wc__eyebrow" data-i18n="session.eyebrowIdle">Ready to write?</span>
+        </div>
+        <div class="wc__status wc__status--active" id="status-active" data-testid="status-active" hidden>
+          <span class="wc__dot" aria-hidden="true"></span>
+          <span data-i18n="session.eyebrowActive">Writing Session</span>
+        </div>
+        <div class="wc__status wc__status--done" id="status-done" data-testid="status-done" hidden>
+          <span class="wc__check" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          <span data-i18n="session.eyebrowDone">Session complete</span>
+        </div>
+
+        <div class="wc__count">
+          <div class="wc__count-number" id="count-number" data-testid="count-number">0</div>
+          <div class="wc__count-label" id="count-label" data-testid="count-label">words</div>
+          <div class="wc__count-sub" id="count-sub" data-testid="count-sub" hidden></div>
+          <div class="wc__count-goal" id="count-goal" data-testid="count-goal" hidden></div>
+        </div>
+
+        <div class="wc__duration" id="duration-row" data-testid="duration-row" hidden>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+          </svg>
+          <span id="duration-value" data-testid="duration-value">00:00:00</span>
+          <span class="wc__duration-label" data-i18n="session.duration">Session duration</span>
+        </div>
+
+        <button class="wc__btn wc__btn--primary" id="primary-btn" data-testid="primary-btn">Start Session</button>
+        <p class="wc__helper wc__helper--center" id="helper-text" data-testid="helper-text"></p>
+      </section>
+
+      <!-- ================= UPGRADE CTA (free-only, appended after session) ================= -->
+      <section class="wc__panel wc__upgrade-cta" id="upgrade-cta" data-testid="upgrade-cta" hidden>
+        <div class="wc__upgrade-cta-head">
+          <span class="wc__sparkle" aria-hidden="true">✦</span>
+          <div>
+            <p class="wc__upgrade-title" data-i18n="upgrade.cta.title">Unlock Your Writing Progress</p>
+            <p class="wc__upgrade-sub" data-i18n="upgrade.cta.sub">Daily prompts, writing goals & a history of your progress.</p>
+          </div>
+        </div>
+        <button class="wc__btn wc__btn--outline" id="open-upgrade" data-testid="open-upgrade" data-i18n="upgrade.cta.btn">Upgrade</button>
+      </section>
+
+      <!-- ================= UPGRADE SCREEN ================= -->
+      <section class="wc__panel wc__upgrade" id="upgrade-panel" data-testid="upgrade-panel" hidden>
+        <button class="wc__back" id="upgrade-back" data-testid="upgrade-back" data-i18n-aria="nav.back" aria-label="Back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          <span data-i18n="nav.back">Back</span>
+        </button>
+        <h2 class="wc__upgrade-headline" data-i18n="upgrade.headline">Write With Purpose</h2>
+        <p class="wc__upgrade-lede" data-i18n="upgrade.sub">Turn writing into a habit you can see.</p>
+
+        <div class="wc__plans">
+          <div class="wc__plan">
+            <div class="wc__plan-head">
+              <p class="wc__plan-title" data-i18n="upgrade.free.title">Free</p>
+              <p class="wc__plan-price"><span data-i18n="upgrade.free.price">$0</span></p>
+            </div>
+            <ul class="wc__plan-list">
+              <li data-i18n="upgrade.free.f1">Writing sessions</li>
+              <li data-i18n="upgrade.free.f2">Live word counter</li>
+              <li data-i18n="upgrade.free.f3">Session results</li>
+            </ul>
+          </div>
+          <div class="wc__plan wc__plan--pro">
+            <div class="wc__plan-head">
+              <p class="wc__plan-title"><span data-i18n="upgrade.pro.title">Pro</span> <span class="wc__pro-badge" data-i18n="badge.pro">PRO</span></p>
+              <p class="wc__plan-price"><span data-i18n="upgrade.pro.price">$4.99</span> <span class="wc__plan-per" data-i18n="upgrade.pro.per">/ month</span></p>
+            </div>
+            <ul class="wc__plan-list">
+              <li data-i18n="upgrade.pro.f1">Everything in Free</li>
+              <li data-i18n="upgrade.pro.f2">Personalized daily prompts</li>
+              <li data-i18n="upgrade.pro.f3">Writing themes</li>
+              <li data-i18n="upgrade.pro.f4">Session writing goals</li>
+              <li data-i18n="upgrade.pro.f5">Writing history & progress</li>
+              <li data-i18n="upgrade.pro.f6">English & Spanish</li>
+            </ul>
+          </div>
+        </div>
+
+        <button class="wc__btn wc__btn--primary" id="try-pro" data-testid="try-pro" data-i18n="upgrade.tryPro">Try Pro</button>
+        <p class="wc__footnote" data-i18n="upgrade.demoNote">Demo mode — no payment collected. Toggle off anytime.</p>
+      </section>
+
+      <!-- ================= PRO ONBOARDING ================= -->
+      <section class="wc__panel wc__pro-onboard" id="pro-onboarding" data-testid="pro-onboarding" hidden>
+        <div class="wc__pro-onboard-progress">
+          <span id="pro-onboard-step" data-testid="pro-onboard-step">Step 1 of 4</span>
+        </div>
+
+        <div class="wc__pro-onboard-step" data-step="language" id="pro-step-language" data-testid="pro-step-language">
+          <h2 class="wc__title" data-i18n="onboard.language.title">Choose your language</h2>
+          <p class="wc__helper" data-i18n="onboard.language.sub">You can change this any time in Settings.</p>
+          <div class="wc__choices" id="lang-choices">
+            <button class="wc__choice" data-lang="en" data-testid="onboard-lang-en">
+              <span class="wc__choice-title">English</span>
+            </button>
+            <button class="wc__choice" data-lang="es" data-testid="onboard-lang-es">
+              <span class="wc__choice-title">Español</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="wc__pro-onboard-step" data-step="goal" id="pro-step-goal" data-testid="pro-step-goal" hidden>
+          <h2 class="wc__title" data-i18n="onboard.goal.title">Choose session goal</h2>
+          <p class="wc__helper" data-i18n="onboard.goal.question">How many words would you like to write per session?</p>
+          <div class="wc__goal-input">
+            <input type="number" inputmode="numeric" min="25" step="25" value="250" id="onboard-goal" data-testid="onboard-goal" />
+            <span class="wc__goal-unit" data-i18n="session.words">words</span>
+          </div>
+          <p class="wc__helper" data-i18n="onboard.goal.rule">Your goal must be in increments of 25 words.</p>
+          <p class="wc__error" id="onboard-goal-error" data-testid="onboard-goal-error" hidden></p>
+        </div>
+
+        <div class="wc__pro-onboard-step" data-step="themes" id="pro-step-themes" data-testid="pro-step-themes" hidden>
+          <h2 class="wc__title" data-i18n="onboard.themes.title">Choose writing themes</h2>
+          <p class="wc__helper" data-i18n="onboard.themes.sub">Pick a few — your daily prompt will draw from these.</p>
+          <div class="wc__theme-grid" id="onboard-themes" data-testid="onboard-themes"></div>
+          <p class="wc__error" id="onboard-themes-error" data-testid="onboard-themes-error" hidden></p>
+        </div>
+
+        <div class="wc__pro-onboard-step" data-step="done" id="pro-step-done" data-testid="pro-step-done" hidden>
+          <h2 class="wc__title" data-i18n="onboard.done.title">You're all set.</h2>
+          <p class="wc__helper" data-i18n="onboard.done.sub">Your first prompt is waiting inside.</p>
+        </div>
+
+        <button class="wc__btn wc__btn--primary" id="pro-onboard-next" data-testid="pro-onboard-next" data-i18n="onboard.continue">Continue</button>
+      </section>
+
       <!-- ================= HISTORY ================= -->
       <section class="wc__panel wc__history" id="history-panel" data-testid="history-panel" hidden>
-        <button class="wc__back" id="history-back" data-testid="history-back" aria-label="Back">
+        <button class="wc__back" id="history-back" data-testid="history-back" data-i18n-aria="nav.back" aria-label="Back">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-          Back
+          <span data-i18n="nav.back">Back</span>
         </button>
-        <h2 class="wc__eyebrow">Recent sessions</h2>
-        <p class="wc__title wc__title--sm" id="history-summary" data-testid="history-summary">No sessions yet</p>
-
-        <div class="wc__history-list" id="history-list" data-testid="history-list" role="list">
-          <!-- items injected by popup.js -->
-        </div>
-
+        <h2 class="wc__eyebrow" data-i18n="history.title">Recent sessions</h2>
+        <p class="wc__title wc__title--sm" id="history-summary" data-testid="history-summary"></p>
+        <div class="wc__history-list" id="history-list" data-testid="history-list" role="list"></div>
         <div class="wc__history-empty" id="history-empty" data-testid="history-empty" hidden>
-          <p>Your completed sessions will appear here.</p>
-          <p class="wc__footnote">Kept locally on this device only.</p>
+          <p data-i18n="history.empty1">Your completed sessions will appear here.</p>
+          <p class="wc__footnote" data-i18n="history.empty2">Kept locally on this device only.</p>
         </div>
-
         <div class="wc__history-actions" id="history-actions" data-testid="history-actions" hidden>
-          <button class="wc__link-btn" id="history-clear" data-testid="history-clear">Clear history</button>
+          <button class="wc__link-btn" id="history-clear" data-testid="history-clear" data-i18n="history.clear">Clear history</button>
         </div>
       </section>
 
       <!-- ================= SETTINGS ================= -->
       <section class="wc__panel wc__settings" id="settings-panel" data-testid="settings-panel" hidden>
-        <button class="wc__back" id="settings-back" data-testid="settings-back" aria-label="Back">
+        <button class="wc__back" id="settings-back" data-testid="settings-back" data-i18n-aria="nav.back" aria-label="Back">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-          Back
+          <span data-i18n="nav.back">Back</span>
         </button>
-        <h2 class="wc__eyebrow">Settings</h2>
-        <p class="wc__title wc__title--sm">Paste handling</p>
-        <div class="wc__choices" role="radiogroup" aria-label="Paste handling">
-          <button class="wc__choice" data-value="separate" data-testid="settings-choice-separate">
-            <span class="wc__choice-title">Keep separate</span>
-            <span class="wc__choice-sub">Show typed and pasted counts individually.</span>
-          </button>
-          <button class="wc__choice" data-value="as_typed" data-testid="settings-choice-as-typed">
-            <span class="wc__choice-title">Count pasted as typed</span>
-            <span class="wc__choice-sub">One combined word count.</span>
-          </button>
+        <h2 class="wc__eyebrow" data-i18n="settings.title">Settings</h2>
+
+        <!-- Writing group -->
+        <div class="wc__setting-group">
+          <p class="wc__setting-group-title" data-i18n="settings.writing">Writing</p>
+          <div class="wc__setting-row" id="row-goal" data-testid="row-goal">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label"><span data-i18n="settings.goalRow">Writing goal</span> <span class="wc__pro-badge wc__pro-badge--sm" id="goal-pro-badge" data-i18n="badge.pro">PRO</span></p>
+              <p class="wc__setting-meta" id="goal-meta"></p>
+            </div>
+            <button class="wc__link-btn" id="edit-goal" data-testid="edit-goal" data-i18n="settings.edit">Edit</button>
+          </div>
+          <div class="wc__setting-editor" id="goal-editor" data-testid="goal-editor" hidden>
+            <div class="wc__goal-input">
+              <input type="number" inputmode="numeric" min="25" step="25" id="goal-input" data-testid="goal-input" />
+              <span class="wc__goal-unit" data-i18n="session.words">words</span>
+            </div>
+            <p class="wc__helper" data-i18n="onboard.goal.rule">Your goal must be in increments of 25 words.</p>
+            <p class="wc__error" id="goal-error" data-testid="goal-error" hidden></p>
+            <button class="wc__btn wc__btn--primary wc__btn--sm" id="save-goal" data-testid="save-goal" data-i18n="settings.save">Save</button>
+          </div>
+
+          <div class="wc__setting-row" id="row-themes" data-testid="row-themes">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label"><span data-i18n="settings.themesRow">Prompt themes</span> <span class="wc__pro-badge wc__pro-badge--sm" id="themes-pro-badge" data-i18n="badge.pro">PRO</span></p>
+              <p class="wc__setting-meta" id="themes-meta"></p>
+            </div>
+            <button class="wc__link-btn" id="edit-themes" data-testid="edit-themes" data-i18n="settings.edit">Edit</button>
+          </div>
+          <div class="wc__setting-editor" id="themes-editor" data-testid="themes-editor" hidden>
+            <div class="wc__theme-grid" id="settings-themes"></div>
+            <p class="wc__error" id="themes-error" data-testid="themes-error" hidden></p>
+            <button class="wc__btn wc__btn--primary wc__btn--sm" id="save-themes" data-testid="save-themes" data-i18n="settings.save">Save</button>
+          </div>
+
+          <div class="wc__setting-row" id="row-paste">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label" data-i18n="settings.pasteRow">Paste handling</p>
+              <p class="wc__setting-meta" id="paste-meta"></p>
+            </div>
+            <button class="wc__link-btn" id="toggle-paste" data-testid="toggle-paste" data-i18n="settings.edit">Edit</button>
+          </div>
+          <div class="wc__setting-editor" id="paste-editor" hidden>
+            <div class="wc__choices">
+              <button class="wc__choice" data-value="separate" data-testid="settings-choice-separate">
+                <span class="wc__choice-title" data-i18n="settings.pasteSeparate">Keep separate</span>
+              </button>
+              <button class="wc__choice" data-value="as_typed" data-testid="settings-choice-as-typed">
+                <span class="wc__choice-title" data-i18n="settings.pasteAsTyped">Count pasted as typed</span>
+              </button>
+            </div>
+          </div>
         </div>
-        <p class="wc__footnote">Your writing never leaves this device.</p>
+
+        <!-- Appearance group -->
+        <div class="wc__setting-group">
+          <p class="wc__setting-group-title" data-i18n="settings.appearance">Appearance</p>
+          <div class="wc__setting-row" id="row-language">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label" data-i18n="settings.language">Language</p>
+              <p class="wc__setting-meta" id="language-meta"></p>
+            </div>
+            <button class="wc__link-btn" id="edit-language" data-testid="edit-language" data-i18n="settings.edit">Edit</button>
+          </div>
+          <div class="wc__setting-editor" id="language-editor" hidden>
+            <div class="wc__choices">
+              <button class="wc__choice" data-lang="en" data-testid="settings-lang-en">
+                <span class="wc__choice-title">English</span>
+              </button>
+              <button class="wc__choice" data-lang="es" data-testid="settings-lang-es">
+                <span class="wc__choice-title">Español</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account group -->
+        <div class="wc__setting-group">
+          <p class="wc__setting-group-title" data-i18n="settings.account">Account</p>
+          <div class="wc__setting-row">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label" data-i18n="settings.plan">Plan</p>
+              <p class="wc__setting-meta" id="plan-meta"></p>
+            </div>
+            <button class="wc__link-btn" id="plan-action" data-testid="plan-action"></button>
+          </div>
+        </div>
+
+        <p class="wc__footnote" data-i18n="settings.privacy">Your writing never leaves this device.</p>
       </section>
 
-      <!-- ================= MAIN SESSION VIEW ================= -->
-      <section class="wc__panel wc__session" id="session-panel" data-testid="session-panel">
-
-        <!-- Idle state header -->
-        <div class="wc__status wc__status--idle" id="status-idle" data-testid="status-idle">
-          <span class="wc__eyebrow">Ready to write?</span>
-        </div>
-
-        <!-- Active state header -->
-        <div class="wc__status wc__status--active" id="status-active" data-testid="status-active" hidden>
-          <span class="wc__dot" aria-hidden="true"></span>
-          <span>Writing Session</span>
-        </div>
-
-        <!-- Completed state header -->
-        <div class="wc__status wc__status--done" id="status-done" data-testid="status-done" hidden>
-          <span class="wc__check" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </span>
-          <span>Session complete</span>
-        </div>
-
-        <!-- Big number -->
-        <div class="wc__count">
-          <div class="wc__count-number" id="count-number" data-testid="count-number">0</div>
-          <div class="wc__count-label" id="count-label" data-testid="count-label">words</div>
-          <div class="wc__count-sub" id="count-sub" data-testid="count-sub" hidden></div>
-        </div>
-
-        <!-- Duration (only shown when active or done) -->
-        <div class="wc__duration" id="duration-row" data-testid="duration-row" hidden>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M12 7v5l3 2"/>
-          </svg>
-          <span id="duration-value" data-testid="duration-value">00:00:00</span>
-          <span class="wc__duration-label">Session duration</span>
-        </div>
-
-        <!-- Primary CTA -->
-        <button class="wc__btn wc__btn--primary" id="primary-btn" data-testid="primary-btn">
-          Start Session
-        </button>
-
-        <p class="wc__helper wc__helper--center" id="helper-text" data-testid="helper-text">
-          Start a session and your words will be counted as you write.
-        </p>
-      </section>
     </main>
 
+    <script src="../shared/i18n.js"></script>
+    <script src="../shared/prompts.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

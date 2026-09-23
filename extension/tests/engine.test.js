@@ -190,6 +190,92 @@ test('appendHistory: caps at max length', () => {
   assert.ok(!h.find((s) => s.startedAt === 0));
 });
 
+// ===== goal validation (mirror of popup.js validateGoal) =====
+
+function validateGoal(raw) {
+  if (raw === '' || raw == null) return { ok: false, reason: 'empty' };
+  const n = Number(raw);
+  if (!Number.isFinite(n) || !Number.isInteger(n)) return { ok: false, reason: 'notint' };
+  if (n <= 0) return { ok: false, reason: 'nonpos' };
+  if (n % 25 !== 0) {
+    const lo = Math.floor(n / 25) * 25;
+    return { ok: false, reason: 'not25', suggestLo: Math.max(25, lo), suggestHi: lo + 25 };
+  }
+  return { ok: true, value: n };
+}
+
+test('validateGoal: rejects empty, negatives, decimals, zero', () => {
+  assert.equal(validateGoal('').ok, false);
+  assert.equal(validateGoal(null).ok, false);
+  assert.equal(validateGoal(0).ok, false);
+  assert.equal(validateGoal(-25).ok, false);
+  assert.equal(validateGoal(12.5).ok, false);
+  assert.equal(validateGoal('abc').ok, false);
+});
+
+test('validateGoal: accepts multiples of 25', () => {
+  [25, 50, 75, 100, 125, 250, 500, 750, 1000, 1025, 2500, 5000].forEach((n) => {
+    const v = validateGoal(n);
+    assert.equal(v.ok, true);
+    assert.equal(v.value, n);
+  });
+});
+
+test('validateGoal: rejects non-multiples of 25 and suggests neighbours', () => {
+  const v = validateGoal(260);
+  assert.equal(v.ok, false);
+  assert.equal(v.reason, 'not25');
+  assert.equal(v.suggestLo, 250);
+  assert.equal(v.suggestHi, 275);
+});
+
+test('validateGoal: 10 suggests 25 (not zero)', () => {
+  const v = validateGoal(10);
+  assert.equal(v.ok, false);
+  assert.equal(v.suggestLo, 25); // floor(10/25)*25 = 0 → clamped to 25
+});
+
+// ===== prompt picker (light integration test) =====
+// Only run if the prompts module is available.
+try {
+  const path = require('path');
+  const script = require('fs').readFileSync(path.join(__dirname, '..', 'shared', 'prompts.js'), 'utf-8');
+  const g = {};
+  // Emulate the (function attach(scope){...})(scope) at bottom.
+  const wrapped = new Function('window', 'globalThis', script + '; return window.WCPrompts;');
+  const WCP = wrapped(g, g);
+
+  test('pickPrompt: returns a prompt for a valid theme', () => {
+    const p = WCP.pickPrompt(['gratitude'], 'en', []);
+    assert.ok(p);
+    assert.equal(p.theme, 'gratitude');
+    assert.ok(p.text.length > 0);
+  });
+
+  test('pickPrompt: surprise-me includes all themes', () => {
+    const p = WCP.pickPrompt(['surprise-me'], 'en', []);
+    assert.ok(p);
+    assert.ok(p.text.length > 0);
+  });
+
+  test('pickPrompt: respects history', () => {
+    const pool = WCP.buildPool(['gratitude'], 'en');
+    const historyIds = pool.slice(0, pool.length - 1).map((p) => p.id);
+    const p = WCP.pickPrompt(['gratitude'], 'en', historyIds);
+    assert.ok(p);
+    // Should have picked the one not in history
+    assert.equal(historyIds.includes(p.id), false);
+  });
+
+  test('pickPrompt: Spanish theme returns Spanish text', () => {
+    const p = WCP.pickPrompt(['gratitude'], 'es', []);
+    assert.ok(p);
+    assert.equal(p.id.startsWith('es:'), true);
+  });
+} catch (err) {
+  test('prompts module load', () => { assert.fail('Could not load prompts: ' + err.message); });
+}
+
 // ---- Runner ----
 (async () => {
   let passed = 0, failed = 0;

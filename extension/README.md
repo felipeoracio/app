@@ -1,12 +1,45 @@
-# Word Count — Chrome Extension (MVP · Phase 1)
+# Word Count — Chrome Extension (Phase 2)
 
-A minimal, private Chrome extension that tracks how many words you write
-during a single writing session. Click **Start Session**, type anywhere in
-Chrome, click **Stop Session** — see exactly how many words you wrote.
+A minimal, private Chrome extension that tracks your writing sessions.
+Free users get a live word counter, on-screen floating pill, and local
+session history. Pro users add a **daily writing prompt**, a
+**words-per-session goal**, a full **progress dashboard**, and
+**English / Spanish** localization — all still stored locally on the
+device.
 
-> Phase 1 only. No accounts, no cloud, no analytics dashboard, no AI. Just
-> reliable session word counting, designed so future phases (history,
-> subscriptions, writing feedback) can be added without a rewrite.
+> Phase 2 — Paid features (goals · prompts · dashboard · i18n). Payment
+> is a **demo toggle**: "Try Pro" flips the switch locally. Nothing is
+> billed. Wire Stripe later without changing the UI.
+
+---
+
+## Features
+
+**Free** (works out of the box)
+
+- **One-click session** — Start / Stop with a single button.
+- **On-screen floating counter** — Draggable pill shows `● N words` on
+  every supported page. Click for Stop button.
+- **Session history** — Local log of your last 500 completed sessions,
+  grouped by day.
+- **Auto light/dark**, keyboard accessible, private (nothing leaves
+  your device).
+
+**Pro** (demo toggle — click Upgrade → Try Pro)
+
+- **Session word goal** — Any positive integer, must be a multiple of
+  25. Inline validation suggests the closest valid neighbours.
+- **Goal on the floating counter** — `● 127 / 250 words`, with the dot
+  turning blue when the goal is reached.
+- **Daily writing prompt** — Curated static library across ~29 themes,
+  one prompt per day (with an "Another prompt" escape hatch). Prompt
+  history prevents immediate repetition.
+- **Full-page dashboard** — Today / This week / This month / This year
+  / All time. Hero total, chart, avg per day, best day, longest
+  session, recent sessions list.
+- **English / Spanish** — Auto-detected from the browser on first run,
+  fully switchable in Settings, applied everywhere including the
+  floating counter and prompts.
 
 ---
 
@@ -27,24 +60,6 @@ Chrome, click **Stop Session** — see exactly how many words you wrote.
 ---
 
 ## Features
-
-- **One-click session** — Start / Stop with a single button.
-- **On-screen floating counter** — While a session is active, a small
-  draggable pill (`● 1,247 words`) sits in the bottom-right corner of every
-  supported page and updates as you type. Click it to reveal a **Stop
-  Session** button; drag it anywhere and its position is remembered.
-- **Session history** — After each stop, the session is appended to a
-  local list (up to the most recent 50). Open the clock icon in the popup
-  to see recent sessions grouped by day with start time, duration, and
-  word count, plus a running total for today. Clear the log any time.
-- **Runs in the background** — Keep writing across tabs and pages; the popup
-  can close and reopen without stopping the session.
-- **Typed vs pasted, your choice** — On first run, decide whether pasted text
-  should count as typed or be tracked separately. Change it any time in
-  Settings.
-- **Premium, minimal UI** — Auto light/dark (follows your OS), tabular
-  numerals, subtle motion, no clutter.
-- **Fully local** — Your writing never leaves your device.
 
 ---
 
@@ -138,18 +153,26 @@ breaks all collapse to a single word boundary.
 
 ```
 extension/
-├── manifest.json          ← MV3 manifest
-├── background.js          ← service worker (session state + word counting)
-├── content.js             ← per-page: typing pipeline + floating overlay
+├── manifest.json          ← MV3 manifest (v0.2.0)
+├── background.js          ← service worker (state · aggregation · prompts)
+├── content.js             ← typing pipeline + floating overlay (shadow DOM)
+├── shared/
+│   ├── i18n.js            ← English / Spanish dictionary + apply helper
+│   └── prompts.js         ← static prompt library (~29 themes × 2 langs)
 ├── popup/
-│   ├── popup.html         ← UI markup (idle / active / done / onboarding / settings)
+│   ├── popup.html         ← paste onboarding · session · prompt card ·
+│   │                         upgrade · pro onboarding · history · settings
 │   ├── popup.css          ← premium minimal styles, auto light/dark
-│   └── popup.js           ← controller — talks to background via messages
+│   └── popup.js           ← controller, talks to background via messages
+├── dashboard/
+│   ├── dashboard.html     ← full-page dashboard opened in a new tab
+│   ├── dashboard.css
+│   └── dashboard.js
 ├── icons/
 │   ├── icon16.png · 32 · 48 · 128
-│   └── generate_icons.py  ← rebuilds icons if you tweak brand colors
+│   └── generate_icons.py
 ├── tests/
-│   ├── engine.test.js     ← unit tests for countWords + applyDelta
+│   ├── engine.test.js     ← 25 unit tests
 │   └── preview.html       ← standalone visual preview of the floating counter
 └── README.md
 ```
@@ -316,6 +339,27 @@ Suggested run-through before shipping any change:
 - [ ] Click the gear icon. Change to "Count pasted as typed" — big
       number in popup and pill both switch to combined total.
 
+**Pro (demo)**
+
+- [ ] Click the extension icon → **Upgrade** → **Try Pro** →
+      walk through the 4-step onboarding (Language → Goal → Themes → Done).
+- [ ] The popup shows a PRO badge, a Dashboard icon, a **Today's writing
+      prompt** card, and a `X / 250 words` pill in the session.
+- [ ] Enter `260` in Settings → Writing goal → shows red error
+      "Please enter a goal in increments of 25 words. Try 250 or 275 words."
+- [ ] Save `500` — the pill on the floating counter updates to
+      `● N / 500 words` next session.
+- [ ] Reach the goal — the dot turns blue and the pill reads
+      **Goal reached** (popup) / stays counting past 500 (never stops).
+- [ ] Click **Another prompt** — a different prompt appears and stays
+      through the day.
+- [ ] Change language to Español in Settings — everything (popup,
+      prompt, floating counter, dashboard) switches immediately.
+- [ ] Open the Dashboard — Today / Week / Month / Year / All time show
+      correct totals and the chart uses the current data.
+- [ ] Settings → Plan → **Turn off Pro (demo)** — dashboard button
+      disappears, prompt card hides, goal pill hides, upgrade CTA returns.
+
 **Session history**
 
 - [ ] Complete two or three short sessions with different word counts.
@@ -351,7 +395,7 @@ cd extension
 node tests/engine.test.js
 ```
 
-Should print `17 passed, 0 failed`.
+Should print `25 passed, 0 failed`.
 
 For a live visual test of the floating on-screen counter without loading
 the full extension, serve the folder and open the preview page:

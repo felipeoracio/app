@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Word Count · Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <div class="wd-shell">
+    <header class="wd-header">
+      <div class="wd-brand">
+        <span class="wd-brand-mark" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 5c-4 0-9 2-12 6-2 3-3 6-3 9 3 0 6-1 9-3 4-3 6-8 6-12z"/>
+            <path d="M4 20l6-6"/>
+          </svg>
+        </span>
+        <span class="wd-brand-name" data-i18n="brand.name">Word Count</span>
+      </div>
+      <div class="wd-header-meta">
+        <span id="plan-badge" class="wd-badge" data-testid="plan-badge">FREE</span>
+      </div>
+    </header>
+
+    <!-- Free-user paywall banner (only when plan==free) -->
+    <section class="wd-paywall" id="paywall" data-testid="paywall" hidden>
+      <div>
+        <h2 data-i18n="dash.free.banner">Unlock this dashboard with Pro</h2>
+        <p data-i18n="dash.free.bannerSub">Daily prompts, writing goals, and history at a glance.</p>
+      </div>
+      <button class="wd-btn wd-btn--primary" id="paywall-cta" data-testid="paywall-cta" data-i18n="dash.free.upgrade">Upgrade</button>
+    </section>
+
+    <main class="wd-main" id="main" data-testid="dashboard-main">
+      <h1 class="wd-title" data-i18n="dash.title">Your writing</h1>
+
+      <nav class="wd-tabs" role="tablist" aria-label="Range">
+        <button class="wd-tab" data-range="today"  data-testid="tab-today"  data-i18n="dash.tabs.today">Today</button>
+        <button class="wd-tab" data-range="week"   data-testid="tab-week"   data-i18n="dash.tabs.week">This week</button>
+        <button class="wd-tab" data-range="month"  data-testid="tab-month"  data-i18n="dash.tabs.month">This month</button>
+        <button class="wd-tab" data-range="year"   data-testid="tab-year"   data-i18n="dash.tabs.year">This year</button>
+        <button class="wd-tab" data-range="all"    data-testid="tab-all"    data-i18n="dash.tabs.all">All time</button>
+      </nav>
+
+      <section class="wd-hero" data-testid="hero-card">
+        <p class="wd-hero-primary" id="hero-primary">0</p>
+        <p class="wd-hero-sub"  id="hero-sub"></p>
+        <div class="wd-hero-meta">
+          <span id="hero-sessions" data-testid="hero-sessions"></span>
+          <span id="hero-progress" data-testid="hero-progress"></span>
+        </div>
+      </section>
+
+      <section class="wd-chart-card" data-testid="chart-card">
+        <div class="wd-chart" id="chart"></div>
+        <p class="wd-chart-empty" id="chart-empty" data-i18n="dash.noData" hidden>No writing recorded yet in this range.</p>
+      </section>
+
+      <section class="wd-stats-grid" data-testid="stats-grid">
+        <div class="wd-stat">
+          <p class="wd-stat-label" data-i18n="dash.avgPerDay">Avg per day</p>
+          <p class="wd-stat-value" id="stat-avg" data-testid="stat-avg">0</p>
+        </div>
+        <div class="wd-stat">
+          <p class="wd-stat-label" data-i18n="dash.bestDay">Best day</p>
+          <p class="wd-stat-value" id="stat-best" data-testid="stat-best">0</p>
+        </div>
+        <div class="wd-stat">
+          <p class="wd-stat-label" data-i18n="dash.longestSession">Longest session</p>
+          <p class="wd-stat-value" id="stat-longest" data-testid="stat-longest">0</p>
+        </div>
+      </section>
+
+      <section class="wd-recent" data-testid="recent-card">
+        <h2 class="wd-section-title" data-i18n="dash.recent">Recent sessions</h2>
+        <div class="wd-recent-list" id="recent-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../shared/i18n.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

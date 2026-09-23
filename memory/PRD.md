@@ -64,13 +64,36 @@ must be modular so future phases plug in cleanly.
   Stop Session button. Fully synchronized with the popup via
   `chrome.storage.onChanged`. Auto light/dark, keyboard accessible,
   cross-tab consistent.
-- **Session history** (this iteration): On stop, the completed session is
-  appended to `wc_history` in `chrome.storage.local` (cap 50, newest
-  first). A new History panel in the popup (clock icon in header) shows
+- **Session history** (previous iteration): On stop, the completed session is
+  appended to `wc_history` in `chrome.storage.local` (cap 500, newest
+  first). A History panel in the popup (clock icon in header) shows
   sessions grouped by day (Today / Yesterday / weekday) with start time,
   duration, and word count, plus a "words today" summary. Empty state and
   a "Clear history" action included. Zero-word sub-second ghost sessions
-  are dropped. 4 new unit tests cover the reducer (17 total).
+  are dropped.
+- **Paid features Phase 1** (this iteration):
+  - Free vs Pro subscription state (demo toggle in Account settings).
+  - Local **profile** (timezone, createdAt) — no cloud.
+  - 4-step pro onboarding: Language → Goal → Themes → Done.
+  - **Session word goal** with strict validation (positive integer,
+    multiple of 25). Inline error suggests neighbours.
+  - Floating counter shows `X / goal words` for Pro, dot turns blue on
+    goal reached, session never stops automatically.
+  - **Daily prompt** system: static library of ~29 themes × 4 prompts ×
+    2 languages, deterministic per day, "Another prompt" cycles through
+    respecting history. Prompt regenerates automatically when language
+    changes.
+  - **English / Spanish** localization across popup, floating counter,
+    and dashboard. Auto-detected from `navigator.language` on first run;
+    stored preference wins after that.
+  - **Full-page Dashboard** opened in a new tab: Today / This week /
+    This month / This year / All time views with hero total, bar chart,
+    avg per day / best day / longest session stats, and recent-sessions
+    list. Free users see a paywall banner above; Pro users see a PRO
+    badge and full stats.
+  - **Upgrade screen** with $4.99 / month placeholder pricing and demo
+    note. Free-user popup shows a tasteful Upgrade CTA under the session.
+  - New tests: goal validation, prompt picker (25 total passing).
 
 ## Known limitations (documented in README)
 

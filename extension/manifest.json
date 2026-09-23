@@ -2,15 +2,14 @@
   "manifest_version": 3,
   "name": "Word Count — Writing Session Tracker",
   "short_name": "Word Count",
-  "version": "0.1.0",
-  "description": "A minimal, private writing session tracker. Click Start, type anywhere in Chrome, click Stop — see exactly how many words you wrote.",
+  "version": "0.2.0",
+  "description": "A minimal, private writing session tracker with goals, prompts and progress. Click Start, type anywhere in Chrome, click Stop — see exactly how many words you wrote.",
   "action": {
     "default_popup": "popup/popup.html",
     "default_title": "Word Count — Writing Session"
   },
   "background": {
-    "service_worker": "background.js",
-    "type": "module"
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
@@ -19,7 +18,7 @@
         "*://chrome.google.com/webstore/*",
         "*://chromewebstore.google.com/*"
       ],
-      "js": ["content.js"],
+      "js": ["shared/i18n.js", "content.js"],
       "run_at": "document_idle",
       "all_frames": false
     }

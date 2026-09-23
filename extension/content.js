@@ -349,20 +349,51 @@
     }
 
     function fmt(n) {
-      return Number(n || 0).toLocaleString('en-US');
+      const lang = (window.WCi18n && window.WCi18n.getLang && window.WCi18n.getLang()) === 'es' ? 'es-ES' : 'en-US';
+      return Number(n || 0).toLocaleString(lang);
+    }
+
+    function tt(key, vars) {
+      if (window.WCi18n && window.WCi18n.t) return window.WCi18n.t(key, vars);
+      // Fallback English strings if i18n not attached
+      const en = {
+        'session.word': 'word', 'session.words': 'words',
+        'session.wordTyped': 'word typed', 'session.wordsTyped': 'words typed',
+        'session.pastedSuffix': `+ ${vars ? vars.n : ''} pasted`,
+        'session.goalReached': 'Goal reached',
+      };
+      return en[key] || key;
     }
 
     function computeDisplay() {
       const typed = sessionState.typedWords || 0;
       const pasted = sessionState.pastedWords || 0;
       const combined = typed + pasted;
-      if (settings.pasteMode === 'as_typed') {
-        return { value: combined, label: combined === 1 ? 'word' : 'words' };
+      const goal = sessionState.sessionGoal || 0;
+      const isPro = (settings.plan || 'free') === 'pro';
+      const primaryValue = settings.pasteMode === 'as_typed' ? combined : typed;
+      const label = settings.pasteMode === 'as_typed'
+        ? (primaryValue === 1 ? tt('session.word') : tt('session.words'))
+        : (typed === 1 ? tt('session.word') : tt('session.words'));
+
+      // Format primary. Pro users see "127 / 250" style.
+      let text;
+      if (isPro && goal > 0) {
+        text = `${fmt(primaryValue)} / ${fmt(goal)}`;
+      } else {
+        text = fmt(primaryValue);
       }
-      // separate → show typed as primary
-      const parts = [`${fmt(typed)}`];
-      const label = typed === 1 ? 'word' : 'words';
-      return { value: null, text: parts[0], label, secondary: pasted > 0 ? `+ ${fmt(pasted)} pasted` : '' };
+
+      const parts = { text, label };
+      // Secondary line for separate paste mode
+      if (settings.pasteMode === 'separate' && pasted > 0) {
+        parts.secondary = tt('session.pastedSuffix', { n: fmt(pasted) });
+      } else {
+        parts.secondary = '';
+      }
+      // Reached indicator
+      parts.reached = isPro && goal > 0 && primaryValue >= goal;
+      return parts;
     }
 
     function syncFromState() {
@@ -379,19 +410,16 @@
     function renderCount() {
       if (!numEl) return;
       const d = computeDisplay();
-      if (d.value != null) {
-        numEl.textContent = fmt(d.value);
-      } else {
-        numEl.textContent = d.text;
-      }
+      numEl.textContent = d.text;
       labelEl.textContent = d.label;
       const secEl = root.getElementById('secondary');
-      if (d.secondary) {
-        secEl.textContent = d.secondary;
-        secEl.hidden = false;
-      } else {
-        secEl.hidden = true;
-      }
+      if (d.secondary) { secEl.textContent = d.secondary; secEl.hidden = false; }
+      else             { secEl.hidden = true; }
+      const dotEl = root.getElementById('dot');
+      if (dotEl) dotEl.classList.toggle('is-reached', !!d.reached);
+      // Stop button label (localized)
+      const stopEl = root.getElementById('stop-btn');
+      if (stopEl) stopEl.textContent = tt('session.stop');
     }
 
     // Re-apply position if viewport shrinks such that the counter would
@@ -486,6 +514,11 @@
         box-shadow: 0 0 0 3px rgba(18,183,106,0.18);
         animation: wc-pulse 2.6s ease-in-out infinite;
         flex: 0 0 auto;
+        transition: background-color 200ms ease, box-shadow 200ms ease;
+      }
+      #dot.is-reached {
+        background: #1F5EFF;
+        box-shadow: 0 0 0 3px rgba(31,94,255,0.18);
       }
       @keyframes wc-pulse {
         0%,100% { opacity: 1; }
