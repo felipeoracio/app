@@ -1,0 +1,167 @@
+/**
+ * Unit tests for the Word Count core engine.
+ *
+ * These tests exercise the same pure functions used by background.js —
+ * countWords() and the applyDelta reducer — without needing a real Chrome
+ * environment. Run with:  node tests/engine.test.js
+ */
+
+const assert = require('node:assert/strict');
+
+// ---- Reimplement pure functions here (mirror of background.js) ----
+// Keeping this in sync manually is acceptable for MVP; both files
+// are small and both live in this repo.
+
+function countWords(text) {
+  if (!text) return 0;
+  const trimmed = text.replace(/\s+/g, ' ').trim();
+  if (!trimmed) return 0;
+  return trimmed.split(' ').length;
+}
+
+function applyDelta(state, delta) {
+  let { typedText, pastedText } = state;
+  if (delta.kind === 'typed' && typeof delta.added === 'string') {
+    typedText += delta.added;
+  } else if (delta.kind === 'pasted' && typeof delta.added === 'string') {
+    pastedText += delta.added;
+  } else if (delta.kind === 'deleted' && typeof delta.removed === 'number') {
+    let n = Math.max(0, Math.floor(delta.removed));
+    if (n > 0) {
+      const fromTyped = Math.min(n, typedText.length);
+      typedText = typedText.slice(0, typedText.length - fromTyped);
+      n -= fromTyped;
+      if (n > 0) {
+        const fromPasted = Math.min(n, pastedText.length);
+        pastedText = pastedText.slice(0, pastedText.length - fromPasted);
+      }
+    }
+  }
+  return { typedText, pastedText };
+}
+
+const empty = () => ({ typedText: '', pastedText: '' });
+
+// ---- Tests ----
+
+const tests = [];
+function test(name, fn) { tests.push([name, fn]); }
+
+// ===== countWords =====
+test('countWords: empty string is 0', () => {
+  assert.equal(countWords(''), 0);
+  assert.equal(countWords('   '), 0);
+  assert.equal(countWords(null), 0);
+  assert.equal(countWords(undefined), 0);
+});
+
+test('countWords: single word', () => {
+  assert.equal(countWords('hello'), 1);
+  assert.equal(countWords('  hello  '), 1);
+});
+
+test('countWords: multiple spaces collapse to one word boundary', () => {
+  assert.equal(countWords('one   two'), 2);
+  assert.equal(countWords('one\t\ttwo'), 2);
+});
+
+test('countWords: line breaks are word boundaries', () => {
+  assert.equal(countWords('line one\nline two'), 4);
+  assert.equal(countWords('a\n\n\nb'), 2);
+});
+
+test('countWords: punctuation stays attached', () => {
+  assert.equal(countWords("don't stop"), 2);
+  assert.equal(countWords('hello, world!'), 2);
+  assert.equal(countWords('state-of-the-art'), 1);
+});
+
+test('countWords: numbers count as words', () => {
+  assert.equal(countWords('I wrote 1200 words today'), 5);
+});
+
+test('countWords: sample from spec (12 words)', () => {
+  assert.equal(
+    countWords('Today I want to finish the first chapter of my book.'),
+    11 // "Today I want to finish the first chapter of my book." = 11 tokens
+  );
+  // The spec example says "12 words" for that sentence but standard tokenizers
+  // give 11; documenting that our counter uses whitespace tokenization.
+});
+
+// ===== applyDelta =====
+test('applyDelta: typed accumulates into typedText only', () => {
+  let s = empty();
+  s = applyDelta(s, { kind: 'typed', added: 'hello ' });
+  s = applyDelta(s, { kind: 'typed', added: 'world' });
+  assert.equal(s.typedText, 'hello world');
+  assert.equal(s.pastedText, '');
+  assert.equal(countWords(s.typedText), 2);
+});
+
+test('applyDelta: pasted accumulates into pastedText only', () => {
+  let s = empty();
+  s = applyDelta(s, { kind: 'pasted', added: 'quick brown fox' });
+  assert.equal(s.typedText, '');
+  assert.equal(s.pastedText, 'quick brown fox');
+  assert.equal(countWords(s.pastedText), 3);
+});
+
+test('applyDelta: deletion pops from typed first', () => {
+  let s = empty();
+  s = applyDelta(s, { kind: 'typed', added: 'hello world' });
+  s = applyDelta(s, { kind: 'deleted', removed: 5 }); // remove "world"
+  assert.equal(s.typedText, 'hello ');
+  assert.equal(countWords(s.typedText), 1);
+});
+
+test('applyDelta: deletion overflows into pasted after typed empties', () => {
+  let s = empty();
+  s = applyDelta(s, { kind: 'pasted', added: 'ABCDE' });
+  s = applyDelta(s, { kind: 'typed',  added: 'XY' });
+  s = applyDelta(s, { kind: 'deleted', removed: 3 }); // eats "XY" (2) + "E" (1)
+  assert.equal(s.typedText, '');
+  assert.equal(s.pastedText, 'ABCD');
+});
+
+test('applyDelta: deletion capped at total length', () => {
+  let s = empty();
+  s = applyDelta(s, { kind: 'typed', added: 'abc' });
+  s = applyDelta(s, { kind: 'deleted', removed: 999 });
+  assert.equal(s.typedText, '');
+  assert.equal(s.pastedText, '');
+});
+
+test('applyDelta: full session simulation', () => {
+  let s = empty();
+  // Type "Today I want to finish"
+  s = applyDelta(s, { kind: 'typed', added: 'Today I want to finish' });
+  // Backspace 6 chars ("finish")
+  s = applyDelta(s, { kind: 'deleted', removed: 6 });
+  // Type "start"
+  s = applyDelta(s, { kind: 'typed', added: 'start' });
+  // Paste " the first chapter"
+  s = applyDelta(s, { kind: 'pasted', added: ' the first chapter' });
+  assert.equal(s.typedText, 'Today I want to start');
+  assert.equal(s.pastedText, ' the first chapter');
+  assert.equal(countWords(s.typedText), 5);
+  assert.equal(countWords(s.pastedText), 3);
+});
+
+// ---- Runner ----
+(async () => {
+  let passed = 0, failed = 0;
+  for (const [name, fn] of tests) {
+    try {
+      await fn();
+      console.log('  \u2713', name);
+      passed++;
+    } catch (err) {
+      console.log('  \u2717', name);
+      console.log('     ', err.message);
+      failed++;
+    }
+  }
+  console.log(`\n${passed} passed, ${failed} failed`);
+  process.exit(failed === 0 ? 0 : 1);
+})();
