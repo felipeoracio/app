@@ -148,6 +148,48 @@ test('applyDelta: full session simulation', () => {
   assert.equal(countWords(s.pastedText), 3);
 });
 
+// ===== history reducer (mirror of appendHistory) =====
+
+function appendHistory(history, session, max = 50) {
+  const words = (session.typedWords || 0) + (session.pastedWords || 0);
+  const duration = Math.max(0, (session.endedAt || 0) - (session.startedAt || 0));
+  if (words === 0 && duration < 1000) return history;
+  return [{ id: session.startedAt || Date.now(), ...session }, ...history].slice(0, max);
+}
+
+test('appendHistory: adds newest first', () => {
+  let h = [];
+  h = appendHistory(h, { startedAt: 100, endedAt: 200, typedWords: 5, pastedWords: 0 });
+  h = appendHistory(h, { startedAt: 300, endedAt: 400, typedWords: 8, pastedWords: 0 });
+  assert.equal(h.length, 2);
+  assert.equal(h[0].startedAt, 300);
+  assert.equal(h[1].startedAt, 100);
+});
+
+test('appendHistory: drops zero-word, sub-second sessions', () => {
+  let h = [];
+  h = appendHistory(h, { startedAt: 100, endedAt: 200, typedWords: 0, pastedWords: 0 });
+  assert.equal(h.length, 0);
+});
+
+test('appendHistory: keeps zero-word sessions that lasted >= 1s', () => {
+  let h = [];
+  h = appendHistory(h, { startedAt: 100, endedAt: 1200, typedWords: 0, pastedWords: 0 });
+  assert.equal(h.length, 1);
+});
+
+test('appendHistory: caps at max length', () => {
+  let h = [];
+  for (let i = 0; i < 60; i++) {
+    h = appendHistory(h, { startedAt: i, endedAt: i + 5000, typedWords: 1, pastedWords: 0 }, 50);
+  }
+  assert.equal(h.length, 50);
+  // Newest kept
+  assert.equal(h[0].startedAt, 59);
+  // Oldest dropped
+  assert.ok(!h.find((s) => s.startedAt === 0));
+});
+
 // ---- Runner ----
 (async () => {
   let passed = 0, failed = 0;

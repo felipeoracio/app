@@ -30,6 +30,10 @@
 
 const STATE_KEY = 'wc_state';
 const SETTINGS_KEY = 'wc_settings';
+const HISTORY_KEY = 'wc_history';
+
+/** How many completed sessions we keep locally. Older ones are dropped. */
+const HISTORY_MAX = 50;
 
 const DEFAULT_STATE = {
   active: false,
@@ -76,6 +80,31 @@ async function getSettings() {
 
 async function setSettings(next) {
   await chrome.storage.local.set({ [SETTINGS_KEY]: next });
+}
+
+// ---------- history ----------
+
+async function getHistory() {
+  const { [HISTORY_KEY]: h } = await chrome.storage.local.get(HISTORY_KEY);
+  return Array.isArray(h) ? h : [];
+}
+
+async function appendHistory(session) {
+  const history = await getHistory();
+  // Ignore zero-word / zero-duration ghost sessions so the list stays useful.
+  const words = (session.typedWords || 0) + (session.pastedWords || 0);
+  const duration = Math.max(0, (session.endedAt || 0) - (session.startedAt || 0));
+  if (words === 0 && duration < 1000) return history;
+
+  // Newest first, cap length.
+  const next = [{ id: session.startedAt || Date.now(), ...session }, ...history]
+    .slice(0, HISTORY_MAX);
+  await chrome.storage.local.set({ [HISTORY_KEY]: next });
+  return next;
+}
+
+async function clearHistory() {
+  await chrome.storage.local.set({ [HISTORY_KEY]: [] });
 }
 
 // ---------- word counting ----------
@@ -154,6 +183,7 @@ async function stopSession() {
     lastResult,
   };
   await setState(next);
+  await appendHistory(lastResult);
   return next;
 }
 
@@ -243,6 +273,16 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         case 'IS_ACTIVE': {
           const state = await getState();
           sendResponse({ ok: true, active: state.active });
+          return;
+        }
+        case 'GET_HISTORY': {
+          const history = await getHistory();
+          sendResponse({ ok: true, history });
+          return;
+        }
+        case 'CLEAR_HISTORY': {
+          await clearHistory();
+          sendResponse({ ok: true, history: [] });
           return;
         }
         default:

@@ -57,13 +57,20 @@ must be modular so future phases plug in cleanly.
 - 13 unit tests passing (`node tests/engine.test.js`).
 - README with install steps, architecture diagram, privacy notes, known
   limitations, and manual test checklist.
-- **On-screen floating counter** (this iteration): Shadow-DOM overlay
+- **On-screen floating counter** (previous iteration): Shadow-DOM overlay
   injected by `content.js`, showing `● N words` in the bottom-right of
   every supported page while a session is active. Draggable with position
   persisted in `wc_settings.counterPos`. Click-to-expand reveals a
   Stop Session button. Fully synchronized with the popup via
   `chrome.storage.onChanged`. Auto light/dark, keyboard accessible,
   cross-tab consistent.
+- **Session history** (this iteration): On stop, the completed session is
+  appended to `wc_history` in `chrome.storage.local` (cap 50, newest
+  first). A new History panel in the popup (clock icon in header) shows
+  sessions grouped by day (Today / Yesterday / weekday) with start time,
+  duration, and word count, plus a "words today" summary. Empty state and
+  a "Clear history" action included. Zero-word sub-second ghost sessions
+  are dropped. 4 new unit tests cover the reducer (17 total).
 
 ## Known limitations (documented in README)
 

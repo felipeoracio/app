@@ -33,6 +33,10 @@ Chrome, click **Stop Session** — see exactly how many words you wrote.
   draggable pill (`● 1,247 words`) sits in the bottom-right corner of every
   supported page and updates as you type. Click it to reveal a **Stop
   Session** button; drag it anywhere and its position is remembered.
+- **Session history** — After each stop, the session is appended to a
+  local list (up to the most recent 50). Open the clock icon in the popup
+  to see recent sessions grouped by day with start time, duration, and
+  word count, plus a running total for today. Clear the log any time.
 - **Runs in the background** — Keep writing across tabs and pages; the popup
   can close and reopen without stopping the session.
 - **Typed vs pasted, your choice** — On first run, decide whether pasted text
@@ -312,6 +316,18 @@ Suggested run-through before shipping any change:
 - [ ] Click the gear icon. Change to "Count pasted as typed" — big
       number in popup and pill both switch to combined total.
 
+**Session history**
+
+- [ ] Complete two or three short sessions with different word counts.
+- [ ] Click the clock icon in the popup — a "Recent sessions" panel
+      opens with each session grouped under **Today**.
+- [ ] Summary reads e.g. "1,247 words today · 3 sessions".
+- [ ] Each row shows the start time, duration, and word count. When paste
+      mode is "separate" and the session included pasted content, the
+      row also shows `N typed · M pasted`.
+- [ ] Click **Clear history** — the list empties.
+- [ ] Zero-word sessions shorter than 1 second are not saved.
+
 **Unsupported pages**
 
 - [ ] Open `chrome://extensions` — no pill (expected, Chrome forbids
@@ -335,7 +351,7 @@ cd extension
 node tests/engine.test.js
 ```
 
-Should print `13 passed, 0 failed`.
+Should print `17 passed, 0 failed`.
 
 For a live visual test of the floating on-screen counter without loading
 the full extension, serve the folder and open the preview page:

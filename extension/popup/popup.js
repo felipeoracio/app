@@ -12,10 +12,19 @@ const els = {
   // panels
   onboarding: $('onboarding-panel'),
   settings:   $('settings-panel'),
+  history:    $('history-panel'),
   session:    $('session-panel'),
   // header
-  settingsBtn: $('settings-btn'),
+  historyBtn:   $('history-btn'),
+  settingsBtn:  $('settings-btn'),
   settingsBack: $('settings-back'),
+  historyBack:  $('history-back'),
+  // history
+  historyList:    $('history-list'),
+  historyEmpty:   $('history-empty'),
+  historyActions: $('history-actions'),
+  historySummary: $('history-summary'),
+  historyClear:   $('history-clear'),
   // session view
   statusIdle:   $('status-idle'),
   statusActive: $('status-active'),
@@ -70,6 +79,7 @@ function fmtDuration(ms) {
 function showPanel(name) {
   els.onboarding.hidden = name !== 'onboarding';
   els.settings.hidden   = name !== 'settings';
+  els.history.hidden    = name !== 'history';
   els.session.hidden    = name !== 'session';
 }
 
@@ -210,12 +220,143 @@ function closeSettings() {
   render(latest);
 }
 
+// ---------- history ----------
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  let h = d.getHours();
+  const m = pad2(d.getMinutes());
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${h}:${m} ${ampm}`;
+}
+
+function formatDurationShort(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ${pad2(s % 60)}s`;
+  const h = Math.floor(m / 60);
+  return `${h}h ${pad2(m % 60)}m`;
+}
+
+/** Local-day key like "2026-01-14" — used to group sessions by day. */
+function dayKey(ts) {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
+function dayHeading(ts) {
+  const day = new Date(ts);
+  const today = new Date();
+  const yest  = new Date(today);
+  yest.setDate(today.getDate() - 1);
+  const k = dayKey(ts);
+  if (k === dayKey(today.getTime()))  return 'Today';
+  if (k === dayKey(yest.getTime()))   return 'Yesterday';
+  return day.toLocaleDateString(undefined, {
+    weekday: 'short', month: 'short', day: 'numeric',
+  });
+}
+
+function totalWords(s) {
+  return (s.typedWords || 0) + (s.pastedWords || 0);
+}
+
+function renderHistory(history) {
+  els.historyList.innerHTML = '';
+  const hasAny = Array.isArray(history) && history.length > 0;
+  els.historyEmpty.hidden = hasAny;
+  els.historyActions.hidden = !hasAny;
+
+  if (!hasAny) {
+    els.historySummary.textContent = 'No sessions yet';
+    return;
+  }
+
+  // Today's aggregate
+  const todayKey = dayKey(Date.now());
+  const todaySessions = history.filter((s) => dayKey(s.startedAt) === todayKey);
+  const todayWords = todaySessions.reduce((sum, s) => sum + totalWords(s), 0);
+  els.historySummary.textContent =
+    todaySessions.length === 0
+      ? `${history.length} session${history.length === 1 ? '' : 's'} saved`
+      : `${fmtNumber(todayWords)} word${todayWords === 1 ? '' : 's'} today · ${todaySessions.length} session${todaySessions.length === 1 ? '' : 's'}`;
+
+  // Group by day
+  let currentKey = null;
+  history.forEach((s) => {
+    const k = dayKey(s.startedAt);
+    if (k !== currentKey) {
+      currentKey = k;
+      const h = document.createElement('div');
+      h.className = 'wc__history-day';
+      h.textContent = dayHeading(s.startedAt);
+      els.historyList.appendChild(h);
+    }
+    els.historyList.appendChild(renderHistoryItem(s));
+  });
+}
+
+function renderHistoryItem(s) {
+  const item = document.createElement('div');
+  item.className = 'wc__history-item';
+  item.setAttribute('role', 'listitem');
+  item.setAttribute('data-testid', 'history-item');
+
+  const time = document.createElement('div');
+  time.className = 'wc__history-time';
+  time.textContent = formatTime(s.startedAt);
+
+  const meta = document.createElement('div');
+  meta.className = 'wc__history-meta';
+  const dur = Math.max(0, (s.endedAt || 0) - (s.startedAt || 0));
+  const typed = s.typedWords || 0;
+  const pasted = s.pastedWords || 0;
+  const bits = [formatDurationShort(dur)];
+  if (s.mode === 'separate' && pasted > 0) {
+    bits.push(`${fmtNumber(typed)} typed · ${fmtNumber(pasted)} pasted`);
+  }
+  meta.textContent = bits.join(' · ');
+
+  const count = document.createElement('div');
+  count.className = 'wc__history-count';
+  const w = totalWords(s);
+  count.innerHTML =
+    `${fmtNumber(w)}<span class="wc__history-count-unit">${w === 1 ? 'word' : 'words'}</span>`;
+
+  item.appendChild(time);
+  item.appendChild(count);
+  item.appendChild(meta);
+  return item;
+}
+
+async function openHistory() {
+  const r = await sendMessage({ type: 'GET_HISTORY' });
+  renderHistory(r.ok ? r.history : []);
+  showPanel('history');
+}
+
+function closeHistory() {
+  render(latest);
+}
+
+async function clearHistory() {
+  const r = await sendMessage({ type: 'CLEAR_HISTORY' });
+  if (r.ok) renderHistory(r.history || []);
+}
+
 // ---------- bootstrap ----------
 
 function wire() {
   els.primaryBtn.addEventListener('click', primaryClick);
   els.settingsBtn.addEventListener('click', openSettings);
   els.settingsBack.addEventListener('click', closeSettings);
+  els.historyBtn.addEventListener('click', openHistory);
+  els.historyBack.addEventListener('click', closeHistory);
+  els.historyClear.addEventListener('click', clearHistory);
 
   els.onboarding.querySelectorAll('.wc__choice').forEach((btn) => {
     btn.addEventListener('click', () => onOnboardingChoice(btn.dataset.value));
@@ -228,8 +369,8 @@ function wire() {
   try {
     chrome.runtime.onMessage.addListener((msg) => {
       if (msg?.type === 'STATE_UPDATE' && msg.payload) {
-        // Don't clobber settings panel — just cache latest.
-        if (!els.settings.hidden) {
+        // Don't clobber settings/history panels — just cache latest.
+        if (!els.settings.hidden || !els.history.hidden) {
           latest = msg.payload;
         } else {
           render(msg.payload);

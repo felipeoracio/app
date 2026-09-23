@@ -20,12 +20,21 @@
           </span>
           <span class="wc__brand-name">Word Count</span>
         </div>
-        <button class="wc__icon-btn" id="settings-btn" title="Settings" data-testid="settings-btn" aria-label="Settings">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.14.69.36.96.65.27.29.44.65.51 1.03"/>
-          </svg>
-        </button>
+        <div class="wc__header-actions">
+          <button class="wc__icon-btn" id="history-btn" title="History" data-testid="history-btn" aria-label="History">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 3-6.7"/>
+              <polyline points="3 4 3 10 9 10"/>
+              <path d="M12 7v5l3 2"/>
+            </svg>
+          </button>
+          <button class="wc__icon-btn" id="settings-btn" title="Settings" data-testid="settings-btn" aria-label="Settings">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.14.69.36.96.65.27.29.44.65.51 1.03"/>
+            </svg>
+          </button>
+        </div>
       </header>
 
       <!-- ================= ONBOARDING (first run) ================= -->
@@ -42,6 +51,29 @@
             <span class="wc__choice-title">Count pasted as typed</span>
             <span class="wc__choice-sub">Combine everything into a single word count.</span>
           </button>
+        </div>
+      </section>
+
+      <!-- ================= HISTORY ================= -->
+      <section class="wc__panel wc__history" id="history-panel" data-testid="history-panel" hidden>
+        <button class="wc__back" id="history-back" data-testid="history-back" aria-label="Back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          Back
+        </button>
+        <h2 class="wc__eyebrow">Recent sessions</h2>
+        <p class="wc__title wc__title--sm" id="history-summary" data-testid="history-summary">No sessions yet</p>
+
+        <div class="wc__history-list" id="history-list" data-testid="history-list" role="list">
+          <!-- items injected by popup.js -->
+        </div>
+
+        <div class="wc__history-empty" id="history-empty" data-testid="history-empty" hidden>
+          <p>Your completed sessions will appear here.</p>
+          <p class="wc__footnote">Kept locally on this device only.</p>
+        </div>
+
+        <div class="wc__history-actions" id="history-actions" data-testid="history-actions" hidden>
+          <button class="wc__link-btn" id="history-clear" data-testid="history-clear">Clear history</button>
         </div>
       </section>
 
