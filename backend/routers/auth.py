@@ -1,6 +1,6 @@
 """Supabase Auth proxy using httpOnly cookies for browser sessions."""
 
-from fastapi import APIRouter, Cookie, Depends, Response, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 
 from lib.auth import AuthenticatedUser, require_user
 from lib.ai_access import entitlement_is_active, get_entitlement
@@ -140,6 +140,9 @@ async def login(payload: AuthCredentials, response: Response) -> AuthResult:
                 raise_http(retry_error)
             _set_session_cookies(response, data)
             return _result(data, payload.email)
+        # Normalize Supabase's native 400 for bad credentials to a REST-correct 401.
+        if error.response_status == 400 and "invalid login credentials" in (error.detail or "").lower():
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=error.detail)
         raise_http(error)
     _set_session_cookies(response, data)
     return _result(data, payload.email)

@@ -1,0 +1,27 @@
+{
+  "summary": "Backend-only auth regression for the new 'sign-up = sign-in' flow. 6/7 tests pass. New signup (fresh @gmail.com) returns 201 with authenticated:true, message 'Signed in.', and Set-Cookie uno_session. Subsequent login with same creds returns authenticated:true + cookie. Repeat signup with the same email transparently signs the user in (200, authenticated:true). Seeded Pro users A & B log in, GET /api/auth/me returns plan=pro, ai_access=true, and GET /api/ai/usage/summary returns 200 with daily_limit/used_today/remaining. Unauthenticated GET /api/ai/usage/summary correctly returns 401. Only minor deviation: wrong-password login returns HTTP 400 (Supabase-native) rather than 401 requested by spec — the response body still includes {'detail':'Invalid login credentials'}.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/auth/login", "issue": "Wrong-password path returns HTTP 400 (propagated from Supabase GoTrue) instead of 401. Body is {'detail':'Invalid login credentials'}. Consider mapping upstream 400 'invalid_credentials' to 401 in lib/supabase_client.raise_http or in the login handler."}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/test_auth_signup_signin.py", "/app/test_reports/pytest/auth_signup_signin.xml"],
+  "action_items": [
+    "Optional: normalize Supabase 400 'Invalid login credentials' to HTTP 401 for the login endpoint to match REST conventions and the review spec."
+  ],
+  "critical_code_review_comments": [
+    "backend/routers/auth.py signup(): admin-create → password_grant flow works; existing-user path via signup() calls login() which correctly re-signs the user in.",
+    "Access token is not returned in the JSON body (only via httpOnly cookie). Callers that need Bearer auth must parse Set-Cookie — acceptable for browser sessions but forces API/E2E clients to read the header. Consider optionally returning access_token in the JSON for programmatic clients if that ever becomes a use case.",
+    "raise_http currently forwards Supabase's HTTP status verbatim; 400 'Invalid login credentials' would be more correctly surfaced as 401 to clients."
+  ],
+  "updated_files": ["/app/backend/tests/test_auth_signup_signin.py"],
+  "success_rate": {"backend": "86% (6/7)", "frontend": "n/a"},
+  "test_credentials": "Seeded from /app/memory/test_credentials.md (unoword.e2e.a@example.com / UnoWord-E2E-A!2026 and unoword.e2e.b@example.com / UnoWord-E2E-B!2026). New signup used uno.qa.<timestamp>@gmail.com per run.",
+  "seed_data_creation": "None beyond a single ephemeral uno.qa.<ts>@gmail.com Supabase auth user per run (created via existing /api/auth/signup). Not cleaned up — Supabase project is a QA project.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Auth 'sign-up = sign-in' works end-to-end against real Supabase. Cookies are Secure; SameSite=None so requests won't resend them over plain http://localhost — parse uno_session from Set-Cookie and use it as Bearer. Only known deviation is 400 vs 401 for invalid password. All AI-entitlement checks pass for seeded Pro users; brand-new signups are not auto-entitled (expected).",
+  "rca of the issue": "Original 'cannot sign in' bug RCA: Supabase project had email confirmation ENABLED, so public /signup returned no session and subsequent /login failed with 'Email not confirmed'. Fix in backend/routers/auth.py creates the user via the Supabase admin API with email_confirm=true and then password-grants immediately; login() also auto-confirms and retries once on 'Email not confirmed'. Verified working in this iteration."
+}
