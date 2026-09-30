@@ -108,6 +108,10 @@ const els = {
   onboardAIAudience:$('onboard-ai-audience'),
   onboardAIProjects:$('onboard-ai-projects'),
   onboardAIAvoid:  $('onboard-ai-avoid'),
+  onboardAIStyle:  $('onboard-ai-style'),
+  onboardAITopics: $('onboard-ai-topics'),
+  onboardAISubjects:$('onboard-ai-subjects'),
+  onboardAIContext:$('onboard-ai-context'),
   onboardAISkip:   $('onboard-ai-skip'),
 
   // history
@@ -177,6 +181,9 @@ const els = {
   aiSettingsGroup:$('ai-settings-group'),
   aiProfileMeta:$('ai-profile-meta'),
   aiProfileAction:$('ai-profile-action'),
+  aiUsageMeta:$('ai-usage-meta'),
+  aiUsageBar:$('ai-usage-bar'),
+  aiUsageBarFill:$('ai-usage-bar-fill'),
   aiMemoryMeta:$('ai-memory-meta'),
   aiMemoryManage:$('ai-memory-manage'),
   aiMemoryEditor:$('ai-memory-editor'),
@@ -686,6 +693,10 @@ function populateAIOnboarding() {
   els.onboardAIAudience.value = draft.audience;
   els.onboardAIProjects.value = draft.currentProjects;
   els.onboardAIAvoid.value = draft.avoidTopics;
+  els.onboardAIStyle.value = draft.writingStyle;
+  els.onboardAITopics.value = draft.primaryTopics;
+  els.onboardAISubjects.value = draft.favoriteSubjects;
+  els.onboardAIContext.value = draft.personalContext;
 }
 
 function captureAIOnboarding() {
@@ -695,6 +706,10 @@ function captureAIOnboarding() {
     audience: els.onboardAIAudience.value,
     currentProjects: els.onboardAIProjects.value,
     avoidTopics: els.onboardAIAvoid.value,
+    writingStyle: els.onboardAIStyle.value,
+    primaryTopics: els.onboardAITopics.value,
+    favoriteSubjects: els.onboardAISubjects.value,
+    personalContext: els.onboardAIContext.value,
     onboardingCompleted: true,
   }, Date.now());
 }
@@ -1031,7 +1046,7 @@ async function openSettings() {
   const response = await sendMessage({ type: 'GET_ACCOUNT' });
   if (response.ok) account = response.account;
   await refreshMemoryQueueStatus();
-  if (account.authenticated && account.aiAccess) await loadDocuments();
+  if (account.authenticated && account.aiAccess) { await loadDocuments(); await loadUsage(); }
   renderSettings();
 }
 
@@ -1087,6 +1102,7 @@ function renderSettings() {
       : t('memory.settings.encrypted', { n: memoryQueue.total });
     els.aiDocumentsMeta.textContent = t('documents.summary', { n: documents.length });
     renderDocuments();
+    renderUsage();
   }
   els.settingsPrivacy.textContent = signedIn
     ? t('settings.privacySignedIn')
@@ -1111,6 +1127,36 @@ async function loadDocuments() {
     documents = [];
     els.documentError.hidden = false;
     els.documentError.textContent = documentErrorMessage(error);
+  }
+}
+
+let usage = null;
+async function loadUsage() {
+  try { usage = await window.WCApi.get('/ai/usage/summary'); }
+  catch (_error) { usage = null; }
+}
+
+function renderUsage() {
+  if (!els.aiUsageMeta) return;
+  if (!usage) {
+    els.aiUsageMeta.textContent = t('aiSettings.usageUnavailable');
+    els.aiUsageBar.hidden = true;
+    return;
+  }
+  if (usage.daily_limit > 0) {
+    els.aiUsageMeta.textContent = t('aiSettings.usageMeter', {
+      used: fmtNumber(usage.used_today),
+      limit: fmtNumber(usage.daily_limit),
+      remaining: fmtNumber(usage.remaining),
+    });
+    const pct = Math.max(0, Math.min(100, Math.round((usage.used_today / usage.daily_limit) * 100)));
+    els.aiUsageBar.hidden = false;
+    els.aiUsageBar.style.cssText = 'height:6px;border-radius:999px;background:rgba(128,128,128,.18);overflow:hidden;margin-top:6px;';
+    const full = usage.remaining === 0;
+    els.aiUsageBarFill.style.cssText = `display:block;height:100%;border-radius:999px;width:${pct}%;transition:width .3s ease;background:${full ? '#d9534f' : '#5b8def'};`;
+  } else {
+    els.aiUsageMeta.textContent = t('aiSettings.usageUnlimited', { used: fmtNumber(usage.used_today) });
+    els.aiUsageBar.hidden = true;
   }
 }
 

@@ -39,6 +39,7 @@ from models.ai import (
     AISuggestionFeedbackCreate,
     AISuggestionRequest,
     AIUsageEvent,
+    AIUsageSummary,
     AIWritingChunk,
     AIWritingSession,
     AIWritingSessionCreate,
@@ -566,3 +567,40 @@ async def list_usage(
         extra={"order": "created_at.desc", "limit": "200"},
     )
     return [AIUsageEvent(**row) for row in rows]
+
+
+@router.get("/usage/summary", response_model=AIUsageSummary)
+async def usage_summary(
+    user: AuthenticatedUser = Depends(require_ai_user),
+) -> AIUsageSummary:
+    entitlement = await _entitlement(user.id)
+    date_key = today_iso()
+    try:
+        rows = await service_rest(
+            "GET",
+            "ai_usage",
+            params={
+                "select": "request_type",
+                "user_id": f"eq.{user.id}",
+                "date": f"eq.{date_key}",
+            },
+        )
+    except SupabaseAPIError as error:
+        raise_http(error)
+    rows = rows or []
+    # Only real (non-fallback) suggestions count against the daily limit, matching
+    # the enforcement in create_suggestion.
+    used_today = sum(1 for row in rows if row.get("request_type") == "suggestion")
+    daily_limit = int(
+        entitlement.get("daily_request_limit")
+        or os.environ.get("AI_DAILY_REQUEST_LIMIT", "0")
+    )
+    remaining = max(0, daily_limit - used_today) if daily_limit else None
+    return AIUsageSummary(
+        date=date_key,
+        plan=entitlement.get("plan") or "free",
+        daily_limit=daily_limit,
+        used_today=used_today,
+        total_today=len(rows),
+        remaining=remaining,
+    )

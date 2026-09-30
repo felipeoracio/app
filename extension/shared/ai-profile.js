@@ -8,8 +8,11 @@
 (function attach(scope) {
   const TEXT_LIMITS = {
     writingGoal: 2000,
+    writingStyle: 500,
     audience: 500,
+    primaryTopics: 2000,
     currentProjects: 2000,
+    favoriteSubjects: 2000,
     avoidTopics: 1000,
     personalContext: 5000,
   };
@@ -28,8 +31,11 @@
     const storedUpdatedAt = Number(source.updatedAt);
     return {
       writingGoal: cleanText(source.writingGoal, TEXT_LIMITS.writingGoal),
+      writingStyle: cleanText(source.writingStyle, TEXT_LIMITS.writingStyle),
       audience: cleanText(source.audience, TEXT_LIMITS.audience),
+      primaryTopics: normalizeListInput(source.primaryTopics, TEXT_LIMITS.primaryTopics),
       currentProjects: normalizeListInput(source.currentProjects, TEXT_LIMITS.currentProjects),
+      favoriteSubjects: normalizeListInput(source.favoriteSubjects, TEXT_LIMITS.favoriteSubjects),
       avoidTopics: normalizeListInput(source.avoidTopics, TEXT_LIMITS.avoidTopics),
       personalContext: cleanText(source.personalContext, TEXT_LIMITS.personalContext),
       onboardingCompleted: source.onboardingCompleted === true,
@@ -56,7 +62,8 @@
   function hasPersonalization(value) {
     const draft = sanitizeDraft(value);
     return Boolean(
-      draft.writingGoal || draft.audience || draft.currentProjects ||
+      draft.writingGoal || draft.writingStyle || draft.audience ||
+      draft.primaryTopics || draft.currentProjects || draft.favoriteSubjects ||
       draft.avoidTopics || draft.personalContext
     );
   }
@@ -65,11 +72,11 @@
     const draft = sanitizeDraft(value);
     return {
       writing_goal: draft.writingGoal || null,
-      writing_style: null,
+      writing_style: draft.writingStyle || null,
       audience: draft.audience || null,
-      primary_topics: [],
+      primary_topics: splitList(draft.primaryTopics),
       current_projects: splitList(draft.currentProjects),
-      favorite_subjects: [],
+      favorite_subjects: splitList(draft.favoriteSubjects),
       avoid_topics: splitList(draft.avoidTopics),
       personal_context: draft.personalContext || null,
       ai_preferences: { source: 'extension_onboarding', sync_status: draft.syncStatus },
@@ -96,8 +103,11 @@
     return sanitizeDraft({
       ...existing,
       writingGoal: value.writing_goal || '',
+      writingStyle: value.writing_style || '',
       audience: value.audience || '',
+      primaryTopics: value.primary_topics || [],
       currentProjects: value.current_projects || [],
+      favoriteSubjects: value.favorite_subjects || [],
       avoidTopics: value.avoid_topics || [],
       personalContext: value.personal_context || '',
       onboardingCompleted: true,

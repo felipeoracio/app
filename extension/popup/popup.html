@@ -271,6 +271,22 @@
               <span data-i18n="onboard.ai.avoid" data-testid="onboard-ai-avoid-label">Any subjects UnoWord should avoid?</span>
               <input id="onboard-ai-avoid" maxlength="1000" data-testid="onboard-ai-avoid" data-i18n-placeholder="onboard.ai.avoidPlaceholder" />
             </label>
+            <label class="wc__field" for="onboard-ai-style" data-testid="onboard-ai-style-field">
+              <span data-i18n="onboard.ai.style" data-testid="onboard-ai-style-label">How would you describe your writing style?</span>
+              <input id="onboard-ai-style" maxlength="500" data-testid="onboard-ai-style" data-i18n-placeholder="onboard.ai.stylePlaceholder" />
+            </label>
+            <label class="wc__field" for="onboard-ai-topics" data-testid="onboard-ai-topics-field">
+              <span data-i18n="onboard.ai.topics" data-testid="onboard-ai-topics-label">What topics do you write about most?</span>
+              <input id="onboard-ai-topics" maxlength="2000" data-testid="onboard-ai-topics" data-i18n-placeholder="onboard.ai.topicsPlaceholder" />
+            </label>
+            <label class="wc__field" for="onboard-ai-subjects" data-testid="onboard-ai-subjects-field">
+              <span data-i18n="onboard.ai.subjects" data-testid="onboard-ai-subjects-label">Any favorite subjects or themes?</span>
+              <input id="onboard-ai-subjects" maxlength="2000" data-testid="onboard-ai-subjects" data-i18n-placeholder="onboard.ai.subjectsPlaceholder" />
+            </label>
+            <label class="wc__field" for="onboard-ai-context" data-testid="onboard-ai-context-field">
+              <span data-i18n="onboard.ai.context" data-testid="onboard-ai-context-label">Anything else UnoWord should know about you?</span>
+              <textarea id="onboard-ai-context" rows="2" maxlength="5000" data-testid="onboard-ai-context" data-i18n-placeholder="onboard.ai.contextPlaceholder"></textarea>
+            </label>
           </div>
           <div class="wc__privacy-note" data-testid="onboard-ai-privacy-note">
             <span class="wc__privacy-icon" aria-hidden="true">◎</span>
@@ -504,6 +520,13 @@
         <!-- AI profile is hidden until the backend confirms auth + entitlement. -->
         <div class="wc__setting-group" id="ai-settings-group" data-testid="ai-settings-group" hidden>
           <p class="wc__setting-group-title" data-i18n="aiSettings.title" data-testid="ai-settings-title">AI Writing Coach</p>
+          <div class="wc__setting-row" data-testid="ai-usage-row">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label" data-i18n="aiSettings.usage" data-testid="ai-usage-label">AI usage today</p>
+              <p class="wc__setting-meta" id="ai-usage-meta" data-testid="ai-usage-meta"></p>
+              <div class="wc__usage-bar" id="ai-usage-bar" data-testid="ai-usage-bar" hidden><span class="wc__usage-bar-fill" id="ai-usage-bar-fill"></span></div>
+            </div>
+          </div>
           <div class="wc__setting-row" data-testid="ai-profile-row">
             <div class="wc__setting-row-main">
               <p class="wc__setting-label" data-i18n="aiSettings.profile" data-testid="ai-profile-label">Private writing profile</p>

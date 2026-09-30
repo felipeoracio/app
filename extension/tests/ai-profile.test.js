@@ -57,6 +57,38 @@ test('toApiProfile maps the draft to backend field names', () => {
   assert.equal(mapped.ai_preferences.sync_status, 'local_only');
 });
 
+test('toApiProfile maps the richer onboarding fields', () => {
+  const mapped = P.toApiProfile({
+    writingStyle: 'Reflective and lyrical',
+    primaryTopics: 'Family, Travel',
+    favoriteSubjects: 'Food\nHistory',
+    personalContext: 'I grew up on a farm.',
+  });
+  assert.equal(mapped.writing_style, 'Reflective and lyrical');
+  assert.deepEqual(mapped.primary_topics, ['Family', 'Travel']);
+  assert.deepEqual(mapped.favorite_subjects, ['Food', 'History']);
+  assert.equal(mapped.personal_context, 'I grew up on a farm.');
+});
+
+test('hasPersonalization recognizes the richer fields', () => {
+  assert.equal(P.hasPersonalization({ writingStyle: 'Lyrical' }), true);
+  assert.equal(P.hasPersonalization({ primaryTopics: 'Family' }), true);
+  assert.equal(P.hasPersonalization({ favoriteSubjects: 'Food' }), true);
+});
+
+test('fromApiProfile round-trips the richer fields into the draft', () => {
+  const draft = P.fromApiProfile({
+    writing_style: 'Plain-spoken',
+    primary_topics: ['Family', 'Travel'],
+    favorite_subjects: ['Food'],
+    personal_context: 'Farm kid.',
+  });
+  assert.equal(draft.writingStyle, 'Plain-spoken');
+  assert.equal(draft.primaryTopics, 'Family, Travel');
+  assert.equal(draft.favoriteSubjects, 'Food');
+  assert.equal(draft.personalContext, 'Farm kid.');
+});
+
 test('mergeWithCloud keeps non-empty local fields and preserves cloud-only fields', () => {
   const merged = P.mergeWithCloud(
     { writingGoal: 'Local memoir', audience: '', currentProjects: 'Book one' },

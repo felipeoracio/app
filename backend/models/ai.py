@@ -239,6 +239,15 @@ class AIUsageEvent(AIModel):
     created_at: datetime = Field(default_factory=utc_now)
 
 
+class AIUsageSummary(AIModel):
+    date: str
+    plan: str
+    daily_limit: int = 0
+    used_today: int = 0
+    total_today: int = 0
+    remaining: int | None = None
+
+
 class AIStatus(AIModel):
     auth_configured: bool
     database: str
