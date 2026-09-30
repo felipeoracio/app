@@ -869,10 +869,17 @@ let historyHasMore = false;
 function renderHistory(history) {
   els.historyList.innerHTML = '';
   const hasAny = Array.isArray(history) && history.length > 0;
+  const isPro = historyPlan === 'pro';
   els.historyEmpty.hidden = hasAny;
-  els.historyActions.hidden = !(hasAny && historyPlan === 'pro');
+  // Pro users can always import a CSV — even before any session is logged — so
+  // they can bring existing history in. Export/Clear only apply once there is
+  // history to act on.
+  els.historyActions.hidden = !isPro;
+  els.historyImport.hidden = false;
+  els.historyExport.hidden = !hasAny;
+  els.historyClear.hidden = !hasAny;
   // Free users who have older (hidden) sessions see the 24h notice + upgrade.
-  els.historyLimit.hidden = !(historyPlan !== 'pro' && historyHasMore);
+  els.historyLimit.hidden = !(!isPro && historyHasMore);
 
   if (!hasAny) { els.historySummary.textContent = t('history.summary.none'); return; }
   const todayK = dayKey(Date.now());
