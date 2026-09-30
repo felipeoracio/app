@@ -33,21 +33,113 @@ def _result(data: dict, fallback_email: str) -> AuthResult:
     )
 
 
+async def _password_grant(email: str, password: str) -> dict:
+    return await auth_request(
+        "POST", "token?grant_type=password", json={"email": email, "password": password}
+    )
+
+
+async def _admin_find_user_id(email: str) -> str | None:
+    target = (email or "").strip().lower()
+    if not target:
+        return None
+    try:
+        data = await auth_request("GET", "admin/users?page=1&per_page=1000", service=True)
+    except SupabaseAPIError:
+        return None
+    users = data.get("users") if isinstance(data, dict) else (data if isinstance(data, list) else [])
+    for user in users or []:
+        if (user.get("email") or "").lower() == target:
+            return user.get("id")
+    return None
+
+
+async def _admin_confirm_email(email: str, user_id: str | None = None) -> bool:
+    """Auto-confirm a user's email with the service-role key so they can sign in
+    immediately. The product intentionally treats sign-up as sign-in (no email
+    verification step), so a fresh account is never left stranded unconfirmed."""
+    uid = user_id or await _admin_find_user_id(email)
+    if not uid:
+        return False
+    try:
+        await auth_request("PUT", f"admin/users/{uid}", json={"email_confirm": True}, service=True)
+        return True
+    except SupabaseAPIError:
+        return False
+
+
 @router.post("/signup", response_model=AuthResult, status_code=status.HTTP_201_CREATED)
 async def signup(payload: AuthCredentials, response: Response) -> AuthResult:
+    # Create the account server-side, pre-confirmed (email_confirm=true), so no
+    # verification email is sent (avoids GoTrue email rate limits) and the user
+    # is signed in immediately — sign-up is treated as sign-in by design.
+    created: dict | None = None
+    try:
+        created = await auth_request(
+            "POST",
+            "admin/users",
+            json={"email": payload.email, "password": payload.password, "email_confirm": True},
+            service=True,
+        )
+    except SupabaseAPIError as error:
+        detail = (error.detail or "").lower()
+        if error.response_status in {400, 409, 422} and any(k in detail for k in ("regist", "already", "exist")):
+            return await login(payload, response)
+        created = None  # Admin API unavailable → fall through to public signup.
+
+    if created is not None:
+        try:
+            session = await _password_grant(payload.email, payload.password)
+        except SupabaseAPIError:
+            return AuthResult(
+                user=AuthUser(
+                    id=str(created.get("id") or "pending-confirmation"),
+                    email=created.get("email") or payload.email,
+                    plan=None,
+                    ai_access=False,
+                ),
+                authenticated=False,
+                message="Account created. Please sign in.",
+            )
+        _set_session_cookies(response, session)
+        return _result(session, payload.email)
+
+    # Fallback: public signup then auto-confirm + session (environments without
+    # the service-role admin API).
     try:
         data = await auth_request("POST", "signup", json=payload.model_dump(mode="json"))
     except SupabaseAPIError as error:
+        if error.response_status in {400, 422} and "regist" in (error.detail or "").lower():
+            return await login(payload, response)
         raise_http(error)
-    _set_session_cookies(response, data)
-    return _result(data, payload.email)
+    if data.get("access_token"):
+        _set_session_cookies(response, data)
+        return _result(data, payload.email)
+    user = data.get("user") or {}
+    uid = user.get("id")
+    await _admin_confirm_email(payload.email, uid if uid and uid != "pending-confirmation" else None)
+    try:
+        session = await _password_grant(payload.email, payload.password)
+    except SupabaseAPIError:
+        return _result(data, payload.email)
+    _set_session_cookies(response, session)
+    return _result(session, payload.email)
 
 
 @router.post("/login", response_model=AuthResult)
 async def login(payload: AuthCredentials, response: Response) -> AuthResult:
     try:
-        data = await auth_request("POST", "token?grant_type=password", json=payload.model_dump(mode="json"))
+        data = await _password_grant(payload.email, payload.password)
     except SupabaseAPIError as error:
+        # An account created before auto-confirm (or with confirmation on) can be
+        # stuck "Email not confirmed": confirm it server-side and retry once.
+        if "confirm" in (error.detail or "").lower() and await _admin_confirm_email(payload.email):
+            try:
+                data = await _password_grant(payload.email, payload.password)
+            except SupabaseAPIError as retry_error:
+                raise_http(retry_error)
+            _set_session_cookies(response, data)
+            return _result(data, payload.email)
         raise_http(error)
     _set_session_cookies(response, data)
     return _result(data, payload.email)
