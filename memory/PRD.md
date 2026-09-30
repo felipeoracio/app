@@ -130,3 +130,9 @@
   The now-redundant thumbs "Was this helpful?" row is hidden (elements kept so existing feedback JS is unchanged).
 - i18n EN+ES added for all four labels + the write confirmation.
 - **Verified**: popup.js + i18n syntax OK, EN/ES key parity, 5 new testids present, all 5 extension test suites pass. (Extension not browser-loadable here — reload at chrome://extensions to see it.)
+
+## Phase 19 — Offline Behavior (2026-06)
+- **Inspection**: the basics are already fully local and offline-safe — word counting + sessions + progress (engine/history), and static/basic prompts (`GET_PROMPT` reads `chrome.storage.local`). No AI model runs in the extension; AI is server-side only via `getNextPrompt`'s AI/static seam. So the extension is not dependent on the AI service.
+- **Gap closed**: when an AI-eligible (Pro) user is **offline**, the fallback was silent. Now `getNextPrompt` still returns a basic prompt but attaches a friendly `prompt.ai.offline` notice ("You're offline — showing a basic prompt. Personalized AI suggestions need an internet connection."); a runtime `offline` AI-request reason maps to the same friendly message instead of the generic error. Offline is detected via `account.online` OR `navigator.onLine`. Added `window` online/offline listeners so the prompt re-renders immediately on connectivity change (Pro only). i18n EN+ES.
+- Signed-out / free users still see the plain static path silently (no noisy AI messaging).
+- **Verified**: popup.js + i18n syntax OK, EN/ES parity for `prompt.ai.offline`, all 5 extension test suites pass. (Extension not browser-loadable here — reload at chrome://extensions to see it.)

@@ -497,10 +497,14 @@ let aiMode = false;
  */
 async function getNextPrompt({ draft = '', project = '' } = {}) {
   const staticPromise = sendMessage({ type: 'GET_PROMPT' });
-  const canUseAI = !!account.authenticated && !!account.aiAccess && account.online !== false;
+  const isOffline = account.online === false || (typeof navigator !== 'undefined' && navigator.onLine === false);
+  const canUseAI = !!account.authenticated && !!account.aiAccess && !isOffline;
   if (!canUseAI) {
     const staticResp = await staticPromise;
-    return { mode: 'static', prompt: staticResp.ok ? staticResp.prompt : null };
+    // AI-eligible but offline → keep basic prompts working and gently note that
+    // personalized AI suggestions need a connection. Stay silent otherwise.
+    const statusKey = (account.authenticated && account.aiAccess && isOffline) ? 'prompt.ai.offline' : null;
+    return { mode: 'static', prompt: staticResp.ok ? staticResp.prompt : null, statusKey };
   }
   const aiResp = await sendMessage({ type: 'GET_AI_SUGGESTION', currentWriting: draft, currentProject: project });
   if (aiResp.ok && aiResp.suggestion) {
@@ -509,7 +513,9 @@ async function getNextPrompt({ draft = '', project = '' } = {}) {
   const staticResp = await staticPromise;
   // Silent fallback for expected states; visible only when something actually broke.
   const noisy = new Set(['offline', 'rate_limited', 'request_failed']);
-  const statusKey = noisy.has(aiResp.reason) ? 'prompt.ai.error' : null;
+  const statusKey = noisy.has(aiResp.reason)
+    ? (aiResp.reason === 'offline' ? 'prompt.ai.offline' : 'prompt.ai.error')
+    : null;
   return { mode: 'static', prompt: staticResp.ok ? staticResp.prompt : null, statusKey };
 }
 
@@ -653,7 +659,7 @@ function renderStaticPrompt(prompt, statusKey = null) {
 
 async function renderPrompt() {
   if (!isPro()) return;
-  const canUseAI = !!account.authenticated && !!account.aiAccess && account.online !== false;
+  const canUseAI = !!account.authenticated && !!account.aiAccess && account.online !== false && !(typeof navigator !== 'undefined' && navigator.onLine === false);
   if (canUseAI) {
     els.promptAiStatus.hidden = false;
     els.promptAiStatus.textContent = t('prompt.ai.loading');
@@ -1685,6 +1691,14 @@ function wire() {
   els.promptAiAgain.addEventListener('click', refreshAiSuggestion);
   els.promptAiNotRelevant.addEventListener('click', onAiNotRelevant);
   els.promptAiWhyBtn.addEventListener('click', onAiWhy);
+
+  // Phase 19 — reflect connectivity changes immediately. Basic prompts, word
+  // counting, sessions and progress stay fully local; only AI requests surface
+  // the "internet required" notice.
+  if (typeof window !== 'undefined') {
+    window.addEventListener('offline', () => { account.online = false; if (isPro()) renderPrompt(); });
+    window.addEventListener('online', () => { account.online = true; if (isPro()) renderPrompt(); });
+  }
   els.promptAiReasons.querySelectorAll('.wc__chip').forEach((chip) => {
     chip.addEventListener('click', () => onAiReasonPick(chip.dataset.reason, chip));
   });
