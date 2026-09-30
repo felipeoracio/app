@@ -1,6 +1,6 @@
 /** UnoWord backend client for the extension service worker. */
 (function attach(scope) {
-  const API_BASE = 'https://uno-ai-coach.preview.emergentagent.com/api';
+  const API_BASE = 'https://uno-word-build.preview.emergentagent.com/api';
 
   class ApiError extends Error {
     constructor(status, body) {
