@@ -119,3 +119,14 @@
   - Added a **document-upload explainer** box (`onboard-ai-upload-note/title/copy`): you can upload PDF/Word/text/Markdown in AI settings to give UnoWord more context.
   - **Exact privacy wording**: "UnoWord uses the information you provide to build your private writing context and personalize suggestions." + "It does not train the underlying AI model on your personal information." + the local-draft note.
 - **Verified**: i18n valid, EN/ES parity for new keys, new testids present, all 5 extension test suites pass. (Extension isn't browser-loadable here — verified by inspection + syntax/tests; reload at chrome://extensions to see it.)
+
+## Phase 18 — Future AI Suggestion UI (2026-06)
+- **Inspection**: the prompt panel already had the AI card (`prompt-ai-card`) with title, suggestion body, a "Why this" `<details>`, topics, thumbs feedback + reason chips + thanks, and a `getNextPrompt` AI/static seam.
+- **Change (extend, reuse existing styling/functions)**: added the Phase-18 action row (`prompt-ai-actions`) with four buttons — **Write About This**, **Give Me Another**, **Not Relevant**, **Why This?** — using the existing `wc__btn`/`wc__link-btn` classes so it matches the UnoWord look. Wiring reuses existing paths:
+  - Write About This → records positive (accepted) feedback via `SEND_AI_FEEDBACK` + "Great — start writing about this." confirmation.
+  - Give Me Another → `refreshAiSuggestion()` (extracted from the existing "Another" handler) re-fetches a suggestion.
+  - Not Relevant → opens the existing negative-feedback reason chips.
+  - Why This? → expands the existing "Why this" reasoning.
+  The now-redundant thumbs "Was this helpful?" row is hidden (elements kept so existing feedback JS is unchanged).
+- i18n EN+ES added for all four labels + the write confirmation.
+- **Verified**: popup.js + i18n syntax OK, EN/ES key parity, 5 new testids present, all 5 extension test suites pass. (Extension not browser-loadable here — reload at chrome://extensions to see it.)

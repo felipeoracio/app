@@ -73,7 +73,13 @@
             <p id="prompt-ai-reason" data-testid="prompt-ai-reason"></p>
           </details>
           <div class="wc__prompt-ai-topics" id="prompt-ai-topics" data-testid="prompt-ai-topics"></div>
-          <div class="wc__prompt-ai-feedback" id="prompt-ai-feedback" data-testid="prompt-ai-feedback">
+          <div class="wc__prompt-ai-actions" id="prompt-ai-actions" data-testid="prompt-ai-actions">
+            <button class="wc__btn wc__btn--primary wc__btn--sm" id="prompt-ai-write" data-testid="prompt-ai-write" data-i18n="prompt.ai.write" type="button">Write About This</button>
+            <button class="wc__btn wc__btn--outline wc__btn--sm" id="prompt-ai-again" data-testid="prompt-ai-again" data-i18n="prompt.ai.again" type="button">Give Me Another</button>
+            <button class="wc__btn wc__btn--outline wc__btn--sm" id="prompt-ai-not-relevant" data-testid="prompt-ai-not-relevant" data-i18n="prompt.ai.notRelevant" type="button">Not Relevant</button>
+            <button class="wc__link-btn" id="prompt-ai-why-btn" data-testid="prompt-ai-why-btn" data-i18n="prompt.ai.whyBtn" type="button">Why This?</button>
+          </div>
+          <div class="wc__prompt-ai-feedback" id="prompt-ai-feedback" data-testid="prompt-ai-feedback" hidden>
             <span class="wc__prompt-ai-feedback-label" data-i18n="prompt.ai.helpful" data-testid="prompt-ai-feedback-label">Was this helpful?</span>
             <button class="wc__icon-btn wc__prompt-ai-thumb" id="prompt-ai-up" data-testid="prompt-ai-up" data-i18n-title="prompt.ai.up" data-i18n-aria="prompt.ai.up" aria-label="Yes, helpful" type="button">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 22V11"/><path d="M7 11l3-7a3 3 0 0 1 6 0v4h4a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-1l-1.4 6.3A2 2 0 0 1 15.6 20H9a2 2 0 0 1-2-2z"/></svg>

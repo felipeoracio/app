@@ -86,6 +86,11 @@ const els = {
   promptAiDown: $('prompt-ai-down'),
   promptAiReasons:$('prompt-ai-reasons'),
   promptAiThanks:$('prompt-ai-thanks'),
+  promptAiActions:$('prompt-ai-actions'),
+  promptAiWrite:$('prompt-ai-write'),
+  promptAiAgain:$('prompt-ai-again'),
+  promptAiNotRelevant:$('prompt-ai-not-relevant'),
+  promptAiWhyBtn:$('prompt-ai-why-btn'),
 
   // upgrade CTA & screen
   openUpgrade:  $('open-upgrade'),
@@ -533,6 +538,8 @@ function renderAISuggestion(sug) {
   els.promptAiSuggestion.textContent = sug.suggestion || '';
   els.promptAiReason.textContent = sug.reason || '';
   els.promptAiWhy.hidden = !sug.reason;
+  els.promptAiWhyBtn.hidden = !sug.reason;
+  els.promptAiActions.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;';
   els.promptAiTopics.innerHTML = '';
   (sug.related_topics || []).slice(0, 6).forEach((topic) => {
     const chip = document.createElement('span');
@@ -549,7 +556,7 @@ function renderAISuggestion(sug) {
   resetFeedbackUI();
 }
 
-async function submitAiFeedback({ helpful, reason = null }) {
+async function submitAiFeedback({ helpful, reason = null, thanksKey = null }) {
   if (!aiSuggestion || !aiSuggestion.id) return;
   els.promptAiUp.disabled = true;
   els.promptAiDown.disabled = true;
@@ -570,7 +577,7 @@ async function submitAiFeedback({ helpful, reason = null }) {
   }
   els.promptAiReasons.hidden = true;
   els.promptAiThanks.hidden = false;
-  els.promptAiThanks.textContent = t(helpful ? 'prompt.ai.thanks.up' : 'prompt.ai.thanks.down');
+  els.promptAiThanks.textContent = t(thanksKey || (helpful ? 'prompt.ai.thanks.up' : 'prompt.ai.thanks.down'));
 }
 
 function onAiThumbUp() {
@@ -592,6 +599,32 @@ function onAiThumbDown() {
 function onAiReasonPick(reason, button) {
   els.promptAiReasons.querySelectorAll('.wc__chip').forEach((c) => c.setAttribute('aria-pressed', c === button ? 'true' : 'false'));
   submitAiFeedback({ helpful: false, reason });
+}
+
+// Phase 18 — explicit suggestion actions, reusing the existing feedback/refresh paths.
+async function refreshAiSuggestion() {
+  els.promptAiStatus.hidden = false;
+  els.promptAiStatus.textContent = t('prompt.ai.loading');
+  const result = await getNextPrompt();
+  if (result.mode === 'ai') { renderAISuggestion(result.suggestion); return; }
+  renderStaticPrompt(result.prompt, result.statusKey);
+}
+
+function onAiWriteAbout() {
+  if (!aiSuggestion) return;
+  els.promptAiUp.setAttribute('aria-pressed', 'true');
+  els.promptAiDown.setAttribute('aria-pressed', 'false');
+  els.promptAiReasons.hidden = true;
+  submitAiFeedback({ helpful: true, thanksKey: 'prompt.ai.writeThanks' });
+}
+
+function onAiNotRelevant() {
+  onAiThumbDown();
+}
+
+function onAiWhy() {
+  if (els.promptAiWhy.hidden) return;
+  els.promptAiWhy.open = !els.promptAiWhy.open;
 }
 
 function renderStaticPrompt(prompt, statusKey = null) {
@@ -1640,14 +1673,7 @@ function wire() {
 
   // Prompt "Another" — routed through the same Phase-13 seam so a broken AI call quietly falls back to the static library.
   els.promptAnother.addEventListener('click', async () => {
-    if (aiMode) {
-      els.promptAiStatus.hidden = false;
-      els.promptAiStatus.textContent = t('prompt.ai.loading');
-      const result = await getNextPrompt();
-      if (result.mode === 'ai') { renderAISuggestion(result.suggestion); return; }
-      renderStaticPrompt(result.prompt, result.statusKey);
-      return;
-    }
+    if (aiMode) { await refreshAiSuggestion(); return; }
     const r = await sendMessage({ type: 'ANOTHER_PROMPT' });
     if (r.ok) { promptState = r.prompt; if (promptState?.text) els.promptText.textContent = promptState.text; }
   });
@@ -1655,6 +1681,10 @@ function wire() {
   // AI suggestion feedback → /api/ai/feedback (thumbs + optional reason).
   els.promptAiUp.addEventListener('click', onAiThumbUp);
   els.promptAiDown.addEventListener('click', onAiThumbDown);
+  els.promptAiWrite.addEventListener('click', onAiWriteAbout);
+  els.promptAiAgain.addEventListener('click', refreshAiSuggestion);
+  els.promptAiNotRelevant.addEventListener('click', onAiNotRelevant);
+  els.promptAiWhyBtn.addEventListener('click', onAiWhy);
   els.promptAiReasons.querySelectorAll('.wc__chip').forEach((chip) => {
     chip.addEventListener('click', () => onAiReasonPick(chip.dataset.reason, chip));
   });
