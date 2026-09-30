@@ -19,6 +19,8 @@
       'header.history': 'History',
       'header.settings': 'Settings',
       'header.dashboard': 'Dashboard',
+      'header.offline': 'Offline',
+      'header.offlineTitle': "You're offline — basic features keep working; AI needs a connection.",
       'badge.pro': 'PRO',
       'nav.back': 'Back',
 
@@ -422,6 +424,8 @@
       'header.history': 'Historial',
       'header.settings': 'Ajustes',
       'header.dashboard': 'Panel',
+      'header.offline': 'Sin conexión',
+      'header.offlineTitle': 'Estás sin conexión: las funciones básicas siguen funcionando; la IA necesita conexión.',
       'badge.pro': 'PRO',
       'nav.back': 'Volver',
 

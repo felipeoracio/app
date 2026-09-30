@@ -91,6 +91,7 @@ const els = {
   promptAiAgain:$('prompt-ai-again'),
   promptAiNotRelevant:$('prompt-ai-not-relevant'),
   promptAiWhyBtn:$('prompt-ai-why-btn'),
+  offlineBadge:$('offline-badge'),
 
   // upgrade CTA & screen
   openUpgrade:  $('open-upgrade'),
@@ -657,6 +658,14 @@ function renderStaticPrompt(prompt, statusKey = null) {
   }
 }
 
+function isOfflineNow() {
+  return account.online === false || (typeof navigator !== 'undefined' && navigator.onLine === false);
+}
+
+function renderOfflineBadge() {
+  if (els.offlineBadge) els.offlineBadge.hidden = !isOfflineNow();
+}
+
 async function renderPrompt() {
   if (!isPro()) return;
   const canUseAI = !!account.authenticated && !!account.aiAccess && account.online !== false && !(typeof navigator !== 'undefined' && navigator.onLine === false);
@@ -1091,6 +1100,7 @@ async function openSettings() {
   showPanel('settings');
   const response = await sendMessage({ type: 'GET_ACCOUNT' });
   if (response.ok) account = response.account;
+  renderOfflineBadge();
   await refreshMemoryQueueStatus();
   if (account.authenticated && account.aiAccess) { await loadDocuments(); await loadUsage(); }
   renderSettings();
@@ -1696,8 +1706,8 @@ function wire() {
   // counting, sessions and progress stay fully local; only AI requests surface
   // the "internet required" notice.
   if (typeof window !== 'undefined') {
-    window.addEventListener('offline', () => { account.online = false; if (isPro()) renderPrompt(); });
-    window.addEventListener('online', () => { account.online = true; if (isPro()) renderPrompt(); });
+    window.addEventListener('offline', () => { account.online = false; renderOfflineBadge(); if (isPro()) renderPrompt(); });
+    window.addEventListener('online', () => { account.online = true; renderOfflineBadge(); if (isPro()) renderPrompt(); });
   }
   els.promptAiReasons.querySelectorAll('.wc__chip').forEach((chip) => {
     chip.addEventListener('click', () => onAiReasonPick(chip.dataset.reason, chip));
@@ -1739,6 +1749,7 @@ async function boot() {
   if (!settings.langChosen) { showPanel('firstlaunch'); return; }
 
   await proBadgeUpdate();
+  renderOfflineBadge();
   await renderPrompt();
   await refreshStreak();
   showPanel('session');

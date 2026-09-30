@@ -136,3 +136,11 @@
 - **Gap closed**: when an AI-eligible (Pro) user is **offline**, the fallback was silent. Now `getNextPrompt` still returns a basic prompt but attaches a friendly `prompt.ai.offline` notice ("You're offline — showing a basic prompt. Personalized AI suggestions need an internet connection."); a runtime `offline` AI-request reason maps to the same friendly message instead of the generic error. Offline is detected via `account.online` OR `navigator.onLine`. Added `window` online/offline listeners so the prompt re-renders immediately on connectivity change (Pro only). i18n EN+ES.
 - Signed-out / free users still see the plain static path silently (no noisy AI messaging).
 - **Verified**: popup.js + i18n syntax OK, EN/ES parity for `prompt.ai.offline`, all 5 extension test suites pass. (Extension not browser-loadable here — reload at chrome://extensions to see it.)
+
+## Offline Badge + Phase 20 — Acceptance verification (2026-06)
+- **Offline Badge**: persistent "Offline" indicator added to the popup header (`offline-badge`, red-dot chip matching the existing badge styling). Driven by `renderOfflineBadge()`/`isOfflineNow()` (via `account.online` OR `navigator.onLine`); refreshed on boot, on settings open, and on `window` online/offline events. i18n EN+ES (`header.offline`, `header.offlineTitle`).
+- **Phase 20 — staged delivery + acceptance**: phases 15–19 were each built after inspecting the real codebase and extending (not rebuilding) existing systems, keeping UnoWord functional throughout. Acceptance re-verified after all changes:
+  - Existing functionality intact: 5 extension test suites pass; local word-count/session/progress/basic-prompt paths untouched and offline-safe.
+  - AI: keys server-side only; `require_ai_user` (authenticated + subscription verified server-side); per-user isolation proven by `phase14_verify_isolation.py` — **18/18** (A cannot read B's documents/memories/profile/onboarding/writing/suggestions/feedback/usage/embeddings); semantic retrieval + real personalized suggestion working; AI failures fall back without breaking.
+  - Cost: retrieval-scoped context + embedding cache + draft/context budgets (full collection never sent); model configurable.
+  - Full backend suite **36 passed**; live `/api/ai/status` healthy.

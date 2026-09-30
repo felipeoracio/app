@@ -89,6 +89,19 @@ html, body {
   height: 16px;
 }
 .wc__pro-badge--sm { padding: 1px 5px; font-size: 9px; }
+.wc__offline-badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--surface-2, rgba(128, 128, 128, 0.16));
+  color: var(--muted, #7c7c85);
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  height: 16px;
+}
+.wc__offline-badge::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: #d9534f;
+}
+.wc__offline-badge[hidden] { display: none !important; }
 
 .wc__header-actions { display: inline-flex; align-items: center; gap: 2px; }
 .wc__icon-btn {
