@@ -104,3 +104,9 @@
 - Deliberately NOT added: response caching / summaries (would break "Give Me Another" variety and over-engineer, against Phase 20).
 - New env: `AI_EMBED_CACHE_SIZE`, `AI_MAX_DRAFT_CHARS`, `AI_MAX_CONTEXT_CHARS`.
 - **Verified**: `tests/test_phase15_cost.py` — identical query embeds once (cache hit), context stays ≤ budget and full draft is never shipped. Full backend suite 32 passed. Live suggestion still returns a real personalized result.
+
+## Phase 16 — Future Document Support (2026-06)
+- **Inspection**: `lib/document_processing.py` had a monolithic `extract_document()` with an if/elif over extensions (TXT/MD/PDF/DOCX). No OCR/image infra (scanned docs already returned a "future OCR processor" message).
+- **Refactor (pluggable, no behavior change)**: introduced a processor registry — `DocumentProcessor` base + `TextProcessor`/`PdfProcessor`/`DocxProcessor`, `register_processor()` and `supported_extensions()`. `extract_document()` now only dispatches by extension. A new format (RTF, or a future OCR/image processor) plugs in by subclassing + registering — no change to the dispatcher, router, storage, chunking, or embedding flow. All constants (`MAX_UPLOAD_BYTES`, `MAX_PDF_PAGES`, `MIME_BY_EXTENSION`) and error messages preserved.
+- **OCR/images intentionally NOT implemented** (no such infrastructure); images/unknown formats reject with "Supported formats … Images/scanned documents need a future OCR processor".
+- **Verified**: `tests/test_phase16_pipeline.py` (default processors registered, images/unknown rejected, a new `.unotest` processor plugs in and dispatches). Full backend suite 36 passed. Live `.md` upload processed to `ready` (text/markdown) end-to-end.
