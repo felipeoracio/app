@@ -72,6 +72,15 @@ async def _entitlement(user_id: str) -> dict:
     return entitlement
 
 
+# --- Phase 15 cost controls -------------------------------------------------
+# The full document collection is never sent to the model: retrieval already
+# caps us to the top-K most relevant chunks. These two bounds additionally cap
+# the raw draft and the total composed prompt so a long draft or a growing
+# memory set can never inflate token cost without limit. Both are env-tunable.
+MAX_DRAFT_CHARS = int(os.environ.get("AI_MAX_DRAFT_CHARS", "2000"))
+MAX_CONTEXT_CHARS = int(os.environ.get("AI_MAX_CONTEXT_CHARS", "6000"))
+
+
 def _compose_prompt_context(
     payload: AISuggestionRequest,
     profile: list[dict],
@@ -89,7 +98,7 @@ def _compose_prompt_context(
     parts: list[str] = []
     source_ids: list[str] = []
     if payload.current_writing:
-        parts.append(f"Current writing draft:\n{payload.current_writing}")
+        parts.append(f"Current writing draft:\n{payload.current_writing[:MAX_DRAFT_CHARS]}")
     if payload.current_project:
         parts.append(f"Current project focus: {payload.current_project}")
     if profile:
@@ -129,6 +138,8 @@ def _compose_prompt_context(
             )
             source_ids.append(chunk.source_id)
     joined = "\n".join(parts[:80])
+    if len(joined) > MAX_CONTEXT_CHARS:
+        joined = joined[:MAX_CONTEXT_CHARS].rstrip() + "\n…[context truncated to fit AI cost budget]"
     return joined or "No saved user context is available yet.", source_ids[:50]
 
 
