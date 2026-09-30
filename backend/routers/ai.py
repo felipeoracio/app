@@ -81,6 +81,16 @@ MAX_DRAFT_CHARS = int(os.environ.get("AI_MAX_DRAFT_CHARS", "2000"))
 MAX_CONTEXT_CHARS = int(os.environ.get("AI_MAX_CONTEXT_CHARS", "6000"))
 
 
+def _resolve_daily_limit(entitlement: dict) -> int:
+    """Effective per-user daily suggestion cap. An env cap (>0) is authoritative
+    and, combined with a per-user entitlement limit, the stricter (lower) wins."""
+    env_cap = int(os.environ.get("AI_DAILY_REQUEST_LIMIT", "0") or 0)
+    ent = int(entitlement.get("daily_request_limit") or 0)
+    if env_cap and ent:
+        return min(env_cap, ent)
+    return env_cap or ent
+
+
 def _compose_prompt_context(
     payload: AISuggestionRequest,
     profile: list[dict],
@@ -397,10 +407,7 @@ async def create_suggestion(
 ) -> AISuggestion:
     entitlement = await _entitlement(user.id)
     date_key = today_iso()
-    daily_limit = int(
-        entitlement.get("daily_request_limit")
-        or os.environ.get("AI_DAILY_REQUEST_LIMIT", "0")
-    )
+    daily_limit = _resolve_daily_limit(entitlement)
     if daily_limit:
         try:
             used = await service_rest(
@@ -602,10 +609,7 @@ async def usage_summary(
     # Only real (non-fallback) suggestions count against the daily limit, matching
     # the enforcement in create_suggestion.
     used_today = sum(1 for row in rows if row.get("request_type") == "suggestion")
-    daily_limit = int(
-        entitlement.get("daily_request_limit")
-        or os.environ.get("AI_DAILY_REQUEST_LIMIT", "0")
-    )
+    daily_limit = _resolve_daily_limit(entitlement)
     remaining = max(0, daily_limit - used_today) if daily_limit else None
     return AIUsageSummary(
         date=date_key,

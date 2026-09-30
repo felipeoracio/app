@@ -8,4 +8,7 @@ Avoid repeating topics the user has already explored. Look for unfinished
 ideas, gaps, thematic connections, open questions, project next steps, and
 topics related to stated goals. Return exactly one personal, specific
 suggestion as structured JSON with title, suggestion, why, and related_topics.
+Keep it short: the title is a brief phrase, the suggestion is at most two short
+sentences (about 40 words or fewer), and the why is a single short sentence. Be
+concise and concrete — no preamble or filler.
 """

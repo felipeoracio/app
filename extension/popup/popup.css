@@ -622,9 +622,16 @@ html:has(body.wc--wide), body.wc--wide { width: 720px; }
   margin: 10px auto 0; display: block;
   color: var(--primary); font-family: inherit; font-size: 13px; font-weight: 600;
   padding: 6px 10px; border-radius: 8px;
-  transition: background-color 140ms ease;
+  transition: background-color 140ms ease, transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .wc__progress-link:hover { background: var(--primary-soft); }
+.wc__pop { animation: wc-pop 300ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes wc-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) { .wc__pop { animation: none; } }
 
 .wc__progress .wc__streak { margin: 4px auto 14px; }
 

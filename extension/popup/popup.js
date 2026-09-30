@@ -441,6 +441,15 @@ async function loadProgress(range) {
   if (isPro()) renderProgChart(s.buckets, range);
 }
 
+function popEl(el) {
+  if (!el || !el.classList) return;
+  el.classList.remove('wc__pop');
+  // reflow so the animation can restart on repeated clicks
+  void el.offsetWidth;
+  el.classList.add('wc__pop');
+  el.addEventListener('animationend', () => el.classList.remove('wc__pop'), { once: true });
+}
+
 async function openProgress() {
   const pro = isPro();
   // Free users: keep it to today's own activity + a tasteful upgrade nudge.
@@ -1609,8 +1618,8 @@ function wire() {
   els.historyUpgrade.addEventListener('click', openUpgrade);
 
   // Progress (in-popup)
-  els.openProgress.addEventListener('click', openProgress);
-  els.dashboardBtn.addEventListener('click', openProgress);
+  els.openProgress.addEventListener('click', (e) => { popEl(e.currentTarget); openProgress(); });
+  els.dashboardBtn.addEventListener('click', (e) => { popEl(e.currentTarget); openProgress(); });
   els.progressBack.addEventListener('click', () => { showPanel('session'); renderSession(); });
   els.progUpgrade.addEventListener('click', openUpgrade);
   els.progHistory.addEventListener('click', openHistory);
