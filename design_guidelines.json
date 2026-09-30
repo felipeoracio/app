@@ -1,0 +1,203 @@
+{
+  "project_name": "UnoWord",
+  "design_archetype": "Swiss High-Contrast & Editorial Utility (Writing-Focused)",
+  "persona_and_vibe": {
+    "emotional_tone": "Distraction-free, restrained, editorial, authoritative, offline-safe",
+    "theme": "Light & Dark Writing-Focused Mode (User/System Toggleable)",
+    "design_principles": [
+      "Fusion over Imitation: Mix Swiss typography precision with warm editorial paper texture and quiet modern AI indicators",
+      "Emotion First: Writing is intimate; UI must never interrupt state of flow or feel like noisy AI popups",
+      "Content is King: The user's words and metrics take 90% of visual weight",
+      "Negative Space: Generous breathing room around writing stats, suggestions, and memory controls",
+      "Contrast & Legibility: Stark high contrast text against subtle warm stone / obsidian backgrounds"
+    ]
+  },
+  "typography": {
+    "fonts": {
+      "sans": "Geist Variable, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      "heading": "Geist Variable, sans-serif",
+      "serif_editorial": "Playfair Display, Cormorant Garamond, serif",
+      "mono": "JetBrains Mono, Source Code Pro, monospace"
+    },
+    "scale_and_limits": {
+      "h1_hero": "text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight (MAX text-5xl)",
+      "h2_section": "text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight",
+      "h3_subsection": "text-lg sm:text-xl font-medium",
+      "h4_widget": "text-base sm:text-lg font-medium",
+      "body": "text-sm sm:text-base leading-relaxed",
+      "caption_labels": "text-xs uppercase tracking-[0.15em] font-mono text-muted-foreground"
+    },
+    "typesetting_rules": [
+      "MUST use tight tracking (tracking-tight) for headlines > 24px",
+      "Overlines / Labels MUST be Uppercase + Tiny (text-xs) + Wide Spacing (tracking-[0.15em] or tracking-widest)",
+      "Hierarchy gap rule: Jump between headline and subtitle must not exceed 2 Tailwind scale steps",
+      "BANNED for headings: Generic Inter, Arial, or over-saturated gradient typography"
+    ]
+  },
+  "colors": {
+    "archetype": "SWISS & HIGH-CONTRAST NEUTRAL",
+    "light_mode": {
+      "background": "oklch(1 0 0)",
+      "foreground": "oklch(0.145 0 0)",
+      "card": "oklch(0.99 0 0)",
+      "card_foreground": "oklch(0.145 0 0)",
+      "popover": "oklch(1 0 0)",
+      "popover_foreground": "oklch(0.145 0 0)",
+      "primary": "oklch(0.205 0 0)",
+      "primary_foreground": "oklch(0.985 0 0)",
+      "secondary": "oklch(0.97 0 0)",
+      "secondary_foreground": "oklch(0.205 0 0)",
+      "muted": "oklch(0.97 0 0)",
+      "muted_foreground": "oklch(0.556 0 0)",
+      "accent": "oklch(0.96 0 0)",
+      "accent_foreground": "oklch(0.205 0 0)",
+      "destructive": "oklch(0.577 0.245 27.325)",
+      "border": "oklch(0.922 0 0)",
+      "input": "oklch(0.922 0 0)",
+      "ring": "oklch(0.708 0 0)",
+      "ai_accent": "oklch(0.488 0.243 264.376)"
+    },
+    "dark_mode": {
+      "background": "oklch(0.145 0 0)",
+      "foreground": "oklch(0.985 0 0)",
+      "card": "oklch(0.205 0 0)",
+      "card_foreground": "oklch(0.985 0 0)",
+      "popover": "oklch(0.205 0 0)",
+      "popover_foreground": "oklch(0.985 0 0)",
+      "primary": "oklch(0.922 0 0)",
+      "primary_foreground": "oklch(0.205 0 0)",
+      "secondary": "oklch(0.269 0 0)",
+      "secondary_foreground": "oklch(0.985 0 0)",
+      "muted": "oklch(0.269 0 0)",
+      "muted_foreground": "oklch(0.708 0 0)",
+      "accent": "oklch(0.269 0 0)",
+      "accent_foreground": "oklch(0.985 0 0)",
+      "destructive": "oklch(0.704 0.191 22.216)",
+      "border": "oklch(1 0 0 / 10%)",
+      "input": "oklch(1 0 0 / 15%)",
+      "ring": "oklch(0.556 0 0)",
+      "ai_accent": "oklch(0.65 0.2 260)"
+    },
+    "rules": [
+      "NO full-screen heavy gradients or bright neon background fills",
+      "Tinted greys rule: Avoid pure black/grey; rely on subtle oklch tones with 1px precise borders",
+      "Contrast compliance: Ensure normal text has min 4.5:1 ratio (WCAG AA / APCA standards)",
+      "Hover text color MUST be explicitly defined (e.g. hover:bg-muted hover:text-foreground)"
+    ]
+  },
+  "visual_enhancers": {
+    "borders": "1px solid var(--border) with rounded-lg or rounded-xl (max radius 0.625rem)",
+    "shadows": "Subtle ambient layers (shadow-sm or shadow-md for popovers/dropdowns). Avoid heavy glow or muddy neumorphism",
+    "glassmorphism": "Used ONLY for sticky floating bars or side sheets (backdrop-blur-md bg-background/80 border border-border/50)",
+    "textures": "Clean minimal surface with optional 1% opacity paper grain or noise overlay for editorial feel",
+    "anti_patterns": [
+      "NO transparent dropdown menu or dialog backgrounds",
+      "NO floating center-everything layouts for dense text views",
+      "NO AI assistant emoji characters (🤖🧠💭💡🔮) used as UI icons"
+    ]
+  },
+  "grids_and_layouts": {
+    "extension_popup_constraints": {
+      "max_width": "380px to 420px",
+      "min_height": "500px",
+      "layout": "Flex column or tight single-column list with fixed sticky header and footer CTA",
+      "padding": "p-4 or p-5 with tight gap-3"
+    },
+    "dashboard_grid_mode": "High Density Grid MODE B",
+    "dashboard_grid_structure": {
+      "base": "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6",
+      "spans": {
+        "word_count_summary": "col-span-1",
+        "writing_session_analytics": "col-span-2 row-span-2",
+        "ai_memory_and_suggestions": "col-span-1 row-span-2",
+        "saved_documents": "col-span-full md:col-span-3"
+      }
+    },
+    "alignment_rules": "Left-align all content, labels, inputs, and paragraphs. Optical alignment for buttons with icons (extra 2px padding)."
+  },
+  "component_rules": {
+    "shadcn_primitives_path": "src/components/ui/",
+    "installed_components": [
+      "button",
+      "card",
+      "input",
+      "label",
+      "select",
+      "dialog",
+      "sheet",
+      "tabs",
+      "badge",
+      "calendar",
+      "sonner",
+      "textarea",
+      "table",
+      "popover",
+      "dropdown-menu",
+      "checkbox"
+    ],
+    "customizations": {
+      "tabs": "Override default fixed height 'h-9' with 'h-auto p-1' to avoid text truncation in tab headers",
+      "cards": "Use flat cards with 1px border-border, bg-card, p-4 or p-6 internal padding",
+      "buttons": "Pill-shaped or sharp rounded-md with transition-colors and active scale micro-feedback",
+      "dropdowns": "MUST have solid bg-popover and border border-border with z-50 to prevent content transparency bleed",
+      "sonner_toasts": "Positioned top-right or bottom-right with high contrast bg-card text-foreground border border-border"
+    }
+  },
+  "motion_and_interactions": {
+    "framework": "Framer Motion / Tailwind transitions",
+    "required_states": ["hover", "active/press", "focus-visible", "disabled"],
+    "micro_interactions": [
+      "Smooth height/opacity transitions for AI suggestion expandable drawers",
+      "Subtle active press scale effect (active:scale-[0.98]) on primary action buttons",
+      "Staggered entrance opacity fade for document chunk/memory list items"
+    ],
+    "accessibility": "Respect prefers-reduced-motion; disable spatial movement transforms when active"
+  },
+  "media_and_icons": {
+    "icon_library": "lucide-react (pre-installed in src/lib/lucide-react.tsx)",
+    "allowed_icons": ["Sparkles", "BrainCircuit", "BookOpen", "PenTool", "FileText", "Check", "X", "Settings", "RefreshCw", "Layers", "ShieldCheck", "Zap"],
+    "image_urls": [
+      {
+        "category": "writing_desk_hero",
+        "url": "https://images.unsplash.com/photo-1513666639414-f795d25747a8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MTN8MHwxfHNlYXJjaHw0fHxtaW5pbWFsaXN0JTIwd3JpdGluZyUyMGRlc2slMjBub3RlYm9va3MlMjBqb3VybmFsfGVufDB8fHx8MTc5MDY0NTI4Nnww&ixlib=rb-4.1.0&q=85",
+        "description": "Gold ballpoint pen on notebook, minimalist editorial writing focus",
+        "usage": "Use as background or visual thumbnail for writing onboarding and editorial profile card"
+      },
+      {
+        "category": "person_writing",
+        "url": "https://images.unsplash.com/photo-1569360556894-15dca0c6ff1a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MTN8MHwxfHNlYXJjaHxfHxtaW5pbWFsaXN0JTIwd3JpdGluZyUyMGRlc2slMjBub3RlYm9va3MlMjBqb3VybmFsfGVufDB8fHx8MTc5MDY0NTI4Nnww&ixlib=rb-4.1.0&q=85",
+        "description": "Person writing on journal book with pen and coffee",
+        "usage": "Use for document memory showcase and active session preview banner"
+      },
+      {
+        "category": "minimal_desk_setup",
+        "url": "https://images.unsplash.com/photo-1620275765334-4ed948bb4502?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MTN8MHwxfHNlYXJjaHwyfHxtaW5pbWFsaXN0JTIwd3JpdGluZyUyMGRlc2slMjBub3RlYm9va3MlMjBqb3VybmFsfGVufDB8fHx8MTc5MDY0NTI4Nnww&ixlib=rb-4.1.0&q=85",
+        "description": "Black pen on white notebook, top down clean view",
+        "usage": "Use in writing session history or prompt library preview empty state"
+      }
+    ]
+  },
+  "ai_experience_guidelines": {
+    "integration_mode": "Native, non-intrusive drawer / side-panel / popover",
+    "offline_safety": "Show visible 'Offline / Local Fallback' status badge when AI backend or API provider is unreachable",
+    "suggestions_flow": "Contextual cards with clear action buttons (Accept, Dismiss, Copy, Save to Memory)",
+    "memory_management": "User-scoped list of saved writing goals, style preferences, tone rules, and document metadata chunks",
+    "privacy_indicators": "Clear labels indicating data stored locally in chrome.storage vs synced to user-scoped FastAPI backend"
+  },
+  "instructions_to_main_agent": [
+    "Phase 1 focus: Preserve existing word-counting, sessions, progress, static prompt library, and extension behavior.",
+    "Do NOT redesign or alter the existing Chrome Extension popup flow unless specifically requested.",
+    "Implement the backend scaffolding in FastAPI (Pydantic v2 models for AI profile, onboarding answers, doc metadata/chunks, memory, suggestions, usage tracking) and Mongo collections with async motor.",
+    "Add authenticated user-scoped API boundary under /api with configurable LLM provider interface and graceful mock/fallback.",
+    "Use data-testid on all interactive buttons, inputs, tabs, modal triggers, and memory items for Playwright testability.",
+    "Keep frontend types synchronized with backend Pydantic models in TS strict mode."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": {
+    "data_testid_rule": "ALL interactive and key status display elements MUST have a data-testid attribute in kebab-case format (e.g. data-testid='ai-onboarding-submit-button')",
+    "no_ai_slop": "Avoid generic centered layouts, default un-styled cards, and gradient text overload.",
+    "spacing_rule": "Use generous padding inside bordered containers (p-4 to p-8) to prevent text touch/collision.",
+    "transition_rule": "NEVER use 'transition: all'. Apply target properties like transition-colors, transition-opacity, or transition-transform.",
+    "toast_rule": "Use sonner for notifications via import { toast } from 'sonner'.",
+    "theme_support": "Ensure both light and dark mode classes (.dark) work seamlessly without broken low-contrast states."
+  }
+}

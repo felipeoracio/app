@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Rich editor preview (Notion / Docs style)</title>
+<style>
+  body { margin:0; padding:40px; min-height:100vh; background:#fafafa; color:#111;
+         font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+  .doc { max-width:720px; margin:0 auto; background:#fff; border:1px solid #eee;
+         border-radius:12px; padding:32px; box-shadow:0 8px 24px rgba(0,0,0,0.04); }
+  h1 { margin-top:0; }
+  .editor { min-height:220px; padding:16px; border-radius:10px; border:1px solid #d5d9e4;
+            font-size:15px; line-height:1.6; outline:none; }
+  .editor:focus { border-color:#1F5EFF; }
+  .controls { margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; }
+  button { padding:8px 14px; border-radius:8px; border:1px solid #d5d9e4; background:white; cursor:pointer; }
+  .hint { color:#8A90A2; font-size:13px; }
+</style>
+</head>
+<body>
+  <div class="doc">
+    <h1>Rich editor preview</h1>
+    <p class="hint">A <code>contenteditable</code> surface that mimics Notion / rich editors
+      (block paragraphs + inline <b>bold</b>/<i>italic</i>). Start a session and type,
+      cut, undo or paste — the floating counter should track TYPED words only.</p>
+    <div class="editor" contenteditable="true" data-testid="rich-editor"
+         aria-label="Rich text editor"><p>Start writing here…</p></div>
+    <div class="controls">
+      <button id="start">Start session</button>
+      <button id="stop">Stop session</button>
+      <button id="bold">Bold selection</button>
+    </div>
+  </div>
+
+  <script>
+    // Minimal chrome.* shim mirroring background.js (count-based deltas).
+    const state = {
+      wc_state: { active:false, startedAt:null, endedAt:null, typedWords:0, pastedWords:0, sessionGoal:0, lastResult:null },
+      wc_settings: { langChosen:true, plan:'free', counterPos:null },
+    };
+    const changeListeners = [];
+    function setStorage(key, value) {
+      const oldValue = state[key]; state[key] = value;
+      const changes = { [key]: { oldValue, newValue: value } };
+      changeListeners.forEach(fn => { try { fn(changes, 'local'); } catch(_) {} });
+    }
+    window.chrome = {
+      runtime: {
+        lastError: undefined,
+        sendMessage(msg, cb) {
+          setTimeout(() => {
+            if (msg.type === 'DELTA') {
+              const s = { ...state.wc_state };
+              const next = window.WCWordCount.applyDelta(s, msg.delta || {});
+              s.typedWords = next.typedWords; s.pastedWords = next.pastedWords;
+              setStorage('wc_state', s);
+            }
+            if (msg.type === 'STOP_SESSION') setStorage('wc_state', { ...state.wc_state, active:false, endedAt:Date.now() });
+            cb && cb({ ok:true });
+          }, 0);
+        },
+        onMessage: { addListener() {} },
+      },
+      storage: {
+        local: {
+          get(keys, cb) { const out={}; (Array.isArray(keys)?keys:[keys]).forEach(k=>out[k]=state[k]); cb(out); },
+          set(obj, cb) { Object.keys(obj).forEach(k=>setStorage(k,obj[k])); cb && cb(); },
+        },
+        onChanged: { addListener(fn){ changeListeners.push(fn); } },
+      },
+    };
+    document.getElementById('start').onclick = () =>
+      setStorage('wc_state', { ...state.wc_state, active:true, startedAt:Date.now(), typedWords:0, pastedWords:0 });
+    document.getElementById('stop').onclick  = () =>
+      setStorage('wc_state', { ...state.wc_state, active:false, endedAt:Date.now() });
+    document.getElementById('bold').onclick  = () => { document.execCommand('bold'); };
+  </script>
+  <script src="../shared/wordcount.js"></script>
+  <script src="../content.js"></script>
+</body>
+</html>

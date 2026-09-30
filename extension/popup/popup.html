@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Word Count</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body data-theme="auto">
+    <main class="wc" data-testid="wc-popup">
+
+      <!-- ================= HEADER ================= -->
+      <header class="wc__header">
+        <div class="wc__brand" data-testid="wc-brand">
+          <span class="wc__brand-mark" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 5c-4 0-9 2-12 6-2 3-3 6-3 9 3 0 6-1 9-3 4-3 6-8 6-12z"/>
+              <path d="M4 20l6-6"/>
+            </svg>
+          </span>
+          <span class="wc__brand-name" data-i18n="brand.name">Word Count</span>
+          <span class="wc__pro-badge" id="pro-badge" data-testid="pro-badge" data-i18n="badge.pro" hidden>PRO</span>
+        </div>
+        <div class="wc__header-actions">
+          <button class="wc__icon-btn" id="dashboard-btn" data-testid="dashboard-btn" data-i18n-aria="header.dashboard" data-i18n-title="header.dashboard" aria-label="Dashboard" hidden>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="12" width="4" height="9"/>
+              <rect x="10" y="7" width="4" height="14"/>
+              <rect x="17" y="3" width="4" height="18"/>
+            </svg>
+          </button>
+          <button class="wc__icon-btn" id="history-btn" data-testid="history-btn" data-i18n-aria="header.history" data-i18n-title="header.history" aria-label="History">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 10 9 10"/><path d="M12 7v5l3 2"/>
+            </svg>
+          </button>
+          <button class="wc__icon-btn" id="settings-btn" data-testid="settings-btn" data-i18n-aria="header.settings" data-i18n-title="header.settings" aria-label="Settings">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.14.69.36.96.65.27.29.44.65.51 1.03"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- ================= FIRST-LAUNCH LANGUAGE ================= -->
+      <section class="wc__panel wc__onboarding" id="firstlaunch-panel" data-testid="firstlaunch-panel" hidden>
+        <h2 class="wc__eyebrow" data-i18n="first.eyebrow">Welcome</h2>
+        <p class="wc__title" data-i18n="first.title">Choose your language</p>
+        <p class="wc__helper" data-i18n="first.sub">Select the language you'd like to use in UnoWord.</p>
+        <div class="wc__choices" id="first-lang-choices">
+          <button class="wc__choice" data-lang="en" data-testid="first-lang-en">
+            <span class="wc__choice-title">English</span>
+          </button>
+          <button class="wc__choice" data-lang="es" data-testid="first-lang-es">
+            <span class="wc__choice-title">Español</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= PROMPT (pro only) ================= -->
+      <section class="wc__panel wc__prompt" id="prompt-panel" data-testid="prompt-panel" hidden>
+        <div class="wc__prompt-head">
+          <span class="wc__eyebrow" id="prompt-eyebrow" data-testid="prompt-eyebrow" data-i18n="prompt.today">Today's writing prompt</span>
+          <button class="wc__link-btn" id="prompt-another" data-testid="prompt-another" data-i18n="prompt.another">Another prompt</button>
+        </div>
+        <p class="wc__prompt-text" id="prompt-text" data-testid="prompt-text">…</p>
+        <div class="wc__prompt-ai" id="prompt-ai-card" data-testid="prompt-ai-card" hidden>
+          <p class="wc__prompt-ai-title" id="prompt-ai-title" data-testid="prompt-ai-title"></p>
+          <p class="wc__prompt-ai-suggestion" id="prompt-ai-suggestion" data-testid="prompt-ai-suggestion"></p>
+          <details class="wc__prompt-ai-why" id="prompt-ai-why" data-testid="prompt-ai-why">
+            <summary data-i18n="prompt.ai.why" data-testid="prompt-ai-why-label">Why this</summary>
+            <p id="prompt-ai-reason" data-testid="prompt-ai-reason"></p>
+          </details>
+          <div class="wc__prompt-ai-topics" id="prompt-ai-topics" data-testid="prompt-ai-topics"></div>
+          <div class="wc__prompt-ai-feedback" id="prompt-ai-feedback" data-testid="prompt-ai-feedback">
+            <span class="wc__prompt-ai-feedback-label" data-i18n="prompt.ai.helpful" data-testid="prompt-ai-feedback-label">Was this helpful?</span>
+            <button class="wc__icon-btn wc__prompt-ai-thumb" id="prompt-ai-up" data-testid="prompt-ai-up" data-i18n-title="prompt.ai.up" data-i18n-aria="prompt.ai.up" aria-label="Yes, helpful" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 22V11"/><path d="M7 11l3-7a3 3 0 0 1 6 0v4h4a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-1l-1.4 6.3A2 2 0 0 1 15.6 20H9a2 2 0 0 1-2-2z"/></svg>
+            </button>
+            <button class="wc__icon-btn wc__prompt-ai-thumb" id="prompt-ai-down" data-testid="prompt-ai-down" data-i18n-title="prompt.ai.down" data-i18n-aria="prompt.ai.down" aria-label="Not helpful" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2v11"/><path d="M17 13l-3 7a3 3 0 0 1-6 0v-4H4a2 2 0 0 1-2-2v0a2 2 0 0 1 2-2h1l1.4-6.3A2 2 0 0 1 8.4 4H15a2 2 0 0 1 2 2z"/></svg>
+            </button>
+          </div>
+          <div class="wc__prompt-ai-reasons" id="prompt-ai-reasons" data-testid="prompt-ai-reasons" hidden>
+            <p class="wc__prompt-ai-reasons-label" data-i18n="prompt.ai.reason.title" data-testid="prompt-ai-reasons-label">What went wrong?</p>
+            <div class="wc__prompt-ai-reasons-chips">
+              <button class="wc__chip" type="button" data-reason="already_written" data-testid="prompt-ai-reason-already_written" data-i18n="prompt.ai.reason.already_written">Already written</button>
+              <button class="wc__chip" type="button" data-reason="not_interested" data-testid="prompt-ai-reason-not_interested" data-i18n="prompt.ai.reason.not_interested">Not interested</button>
+              <button class="wc__chip" type="button" data-reason="wrong_direction" data-testid="prompt-ai-reason-wrong_direction" data-i18n="prompt.ai.reason.wrong_direction">Wrong direction</button>
+              <button class="wc__chip" type="button" data-reason="too_personal" data-testid="prompt-ai-reason-too_personal" data-i18n="prompt.ai.reason.too_personal">Too personal</button>
+              <button class="wc__chip" type="button" data-reason="too_vague" data-testid="prompt-ai-reason-too_vague" data-i18n="prompt.ai.reason.too_vague">Too vague</button>
+              <button class="wc__chip" type="button" data-reason="other" data-testid="prompt-ai-reason-other" data-i18n="prompt.ai.reason.other">Other</button>
+            </div>
+          </div>
+          <p class="wc__prompt-ai-thanks" id="prompt-ai-thanks" data-testid="prompt-ai-thanks" hidden></p>
+        </div>
+        <p class="wc__prompt-goal" id="prompt-goal" data-testid="prompt-goal">Your goal: 250 words</p>
+        <p class="wc__prompt-ai-status" id="prompt-ai-status" data-testid="prompt-ai-status" hidden></p>
+        <div class="wc__prompt-empty" id="prompt-empty" data-testid="prompt-empty" hidden>
+          <p data-i18n="prompt.themesEmpty">Choose your themes to see a prompt.</p>
+          <button class="wc__link-btn" id="prompt-edit-themes" data-i18n="prompt.editThemes">Edit themes</button>
+        </div>
+      </section>
+
+      <!-- ================= MAIN SESSION VIEW ================= -->
+      <section class="wc__panel wc__session" id="session-panel" data-testid="session-panel">
+        <div class="wc__status wc__status--idle" id="status-idle" data-testid="status-idle">
+          <span class="wc__eyebrow" data-i18n="session.eyebrowIdle">Ready to write?</span>
+        </div>
+        <div class="wc__status wc__status--active" id="status-active" data-testid="status-active" hidden>
+          <span class="wc__dot" aria-hidden="true"></span>
+          <span data-i18n="session.eyebrowActive">Writing Session</span>
+        </div>
+        <div class="wc__status wc__status--done" id="status-done" data-testid="status-done" hidden>
+          <span class="wc__check" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+          <span data-i18n="session.eyebrowDone">Session complete</span>
+        </div>
+
+        <div class="wc__streak" id="streak-chip" data-testid="streak-chip" hidden>
+          <svg class="wc__streak-flame" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c1 3-1 5-2 6-1.5 1.5-3 3-3 6a5 5 0 0 0 10 0c0-2-1-3-1-4 2 1 3 3 3 5a7 7 0 1 1-14 0c0-4 3-6 4-8 1-1.5 2-3 3-5z"/></svg>
+          <span id="streak-text" data-testid="streak-text"></span>
+        </div>
+
+        <div class="wc__count">
+          <div class="wc__count-number" id="count-number" data-testid="count-number">0</div>
+          <div class="wc__count-label" id="count-label" data-testid="count-label">words</div>
+          <div class="wc__count-sub" id="count-sub" data-testid="count-sub" hidden></div>
+          <div class="wc__count-goal" id="count-goal" data-testid="count-goal" hidden></div>
+        </div>
+
+        <div class="wc__duration" id="duration-row" data-testid="duration-row" hidden>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+          </svg>
+          <span id="duration-value" data-testid="duration-value">00:00:00</span>
+          <span class="wc__duration-label" data-i18n="session.duration">Session duration</span>
+        </div>
+
+        <button class="wc__btn wc__btn--primary" id="primary-btn" data-testid="primary-btn">Start Session</button>
+        <p class="wc__helper wc__helper--center" id="helper-text" data-testid="helper-text"></p>
+        <div class="wc__memory-card" id="memory-card" data-testid="memory-card" hidden>
+          <div class="wc__memory-head" data-testid="memory-card-header">
+            <span class="wc__memory-icon" aria-hidden="true">◎</span>
+            <div>
+              <p class="wc__memory-title" data-i18n="memory.prompt.title" data-testid="memory-prompt-title">Save this writing to AI Memory?</p>
+              <p class="wc__memory-copy" id="memory-prompt-copy" data-testid="memory-prompt-copy"></p>
+            </div>
+          </div>
+          <p class="wc__memory-status" id="memory-status" data-testid="memory-status" hidden></p>
+          <div class="wc__memory-actions" id="memory-actions" data-testid="memory-actions">
+            <button class="wc__btn wc__btn--primary wc__btn--sm" id="memory-save" data-testid="memory-save" data-i18n="memory.prompt.save">Save</button>
+            <button class="wc__link-btn" id="memory-dont-save" data-testid="memory-dont-save" data-i18n="memory.prompt.dont">Don't Save</button>
+            <button class="wc__link-btn" id="memory-always-save" data-testid="memory-always-save" data-i18n="memory.prompt.always">Always Save</button>
+          </div>
+        </div>
+        <button class="wc__progress-link" id="open-progress" data-testid="open-progress" data-i18n="progress.link">Progress →</button>
+      </section>
+
+      <!-- ================= UPGRADE CTA (free-only, appended after session) ================= -->
+      <section class="wc__panel wc__upgrade-cta" id="upgrade-cta" data-testid="upgrade-cta" hidden>
+        <div class="wc__upgrade-cta-head">
+          <span class="wc__sparkle" aria-hidden="true">✦</span>
+          <div>
+            <p class="wc__upgrade-title" data-i18n="upgrade.cta.title">Unlock Your Writing Progress</p>
+            <p class="wc__upgrade-sub" data-i18n="upgrade.cta.sub">Daily prompts, writing goals & a history of your progress.</p>
+          </div>
+        </div>
+        <button class="wc__btn wc__btn--outline" id="open-upgrade" data-testid="open-upgrade" data-i18n="upgrade.cta.btn">Upgrade</button>
+      </section>
+
+      <!-- ================= UPGRADE SCREEN ================= -->
+      <section class="wc__panel wc__upgrade" id="upgrade-panel" data-testid="upgrade-panel" hidden>
+        <button class="wc__back" id="upgrade-back" data-testid="upgrade-back" data-i18n-aria="nav.back" aria-label="Back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          <span data-i18n="nav.back">Back</span>
+        </button>
+        <h2 class="wc__upgrade-headline" data-i18n="upgrade.headline">Write With Purpose</h2>
+        <p class="wc__upgrade-lede" data-i18n="upgrade.sub">Turn writing into a habit you can see.</p>
+
+        <div class="wc__plans">
+          <div class="wc__plan">
+            <div class="wc__plan-head">
+              <p class="wc__plan-title" data-i18n="upgrade.free.title">Free</p>
+              <p class="wc__plan-price"><span data-i18n="upgrade.free.price">$0</span></p>
+            </div>
+            <ul class="wc__plan-list">
+              <li data-i18n="upgrade.free.f1">Writing sessions</li>
+              <li data-i18n="upgrade.free.f2">Live word counter</li>
+              <li data-i18n="upgrade.free.f3">Session results</li>
+            </ul>
+          </div>
+          <div class="wc__plan wc__plan--pro">
+            <div class="wc__plan-head">
+              <p class="wc__plan-title"><span data-i18n="upgrade.pro.title">Pro</span> <span class="wc__pro-badge" data-i18n="badge.pro">PRO</span></p>
+              <p class="wc__plan-price"><span data-i18n="upgrade.pro.price">$20</span> <span class="wc__plan-per" data-i18n="upgrade.pro.per">/ month</span></p>
+              <p class="wc__plan-trial" data-i18n="upgrade.pro.trial" data-testid="upgrade-pro-trial">Includes a 7-day free trial</p>
+            </div>
+            <ul class="wc__plan-list">
+              <li data-i18n="upgrade.pro.f1">Everything in Free</li>
+              <li data-i18n="upgrade.pro.f7" data-testid="upgrade-pro-f7">AI Writing Coach — personalized suggestions, private memory, and document context</li>
+              <li data-i18n="upgrade.pro.f2">Personalized daily prompts</li>
+              <li data-i18n="upgrade.pro.f3">Writing themes</li>
+              <li data-i18n="upgrade.pro.f4">Session writing goals</li>
+              <li data-i18n="upgrade.pro.f5">Writing history & progress</li>
+              <li data-i18n="upgrade.pro.f6">English & Spanish</li>
+            </ul>
+          </div>
+        </div>
+
+        <button class="wc__btn wc__btn--primary" id="try-pro" data-testid="try-pro" data-i18n="upgrade.tryPro">Start free 7-day trial</button>
+        <p class="wc__footnote" data-i18n="upgrade.demoNote">Demo mode — no payment collected. Toggle off anytime.</p>
+      </section>
+
+      <!-- ================= PRO ONBOARDING ================= -->
+      <section class="wc__panel wc__pro-onboard" id="pro-onboarding" data-testid="pro-onboarding" hidden>
+        <div class="wc__pro-onboard-progress">
+          <span id="pro-onboard-step" data-testid="pro-onboard-step">Step 1 of 5</span>
+        </div>
+
+        <div class="wc__pro-onboard-step" data-step="language" id="pro-step-language" data-testid="pro-step-language">
+          <h2 class="wc__title" data-i18n="onboard.language.title">Choose your language</h2>
+          <p class="wc__helper" data-i18n="onboard.language.sub">You can change this any time in Settings.</p>
+          <div class="wc__choices" id="lang-choices">
+            <button class="wc__choice" data-lang="en" data-testid="onboard-lang-en">
+              <span class="wc__choice-title">English</span>
+            </button>
+            <button class="wc__choice" data-lang="es" data-testid="onboard-lang-es">
+              <span class="wc__choice-title">Español</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="wc__pro-onboard-step" data-step="goal" id="pro-step-goal" data-testid="pro-step-goal" hidden>
+          <h2 class="wc__title" data-i18n="onboard.goal.title">Choose session goal</h2>
+          <p class="wc__helper" data-i18n="onboard.goal.question">How many words would you like to write per session?</p>
+          <div class="wc__goal-input">
+            <input type="number" inputmode="numeric" min="25" step="25" value="250" id="onboard-goal" data-testid="onboard-goal" />
+            <span class="wc__goal-unit" data-i18n="session.words">words</span>
+          </div>
+          <p class="wc__helper" data-i18n="onboard.goal.rule">Your goal must be in increments of 25 words.</p>
+          <p class="wc__error" id="onboard-goal-error" data-testid="onboard-goal-error" hidden></p>
+        </div>
+
+        <div class="wc__pro-onboard-step" data-step="themes" id="pro-step-themes" data-testid="pro-step-themes" hidden>
+          <h2 class="wc__title" data-i18n="onboard.themes.title">Choose writing themes</h2>
+          <p class="wc__helper" data-i18n="onboard.themes.sub">Pick a few — your daily prompt will draw from these.</p>
+          <div class="wc__theme-grid" id="onboard-themes" data-testid="onboard-themes"></div>
+          <p class="wc__error" id="onboard-themes-error" data-testid="onboard-themes-error" hidden></p>
+        </div>
+
+        <div class="wc__pro-onboard-step" data-step="ai" id="pro-step-ai" data-testid="pro-step-ai" hidden>
+          <h2 class="wc__title" data-i18n="onboard.ai.title" data-testid="onboard-ai-title">Personalize your future AI coach</h2>
+          <p class="wc__helper" data-i18n="onboard.ai.sub" data-testid="onboard-ai-subtitle">Optional — share only what you want UnoWord to use for future personalized suggestions.</p>
+          <div class="wc__ai-form" data-testid="onboard-ai-form">
+            <label class="wc__field" for="onboard-ai-goal" data-testid="onboard-ai-goal-field">
+              <span data-i18n="onboard.ai.writingGoal" data-testid="onboard-ai-goal-label">What are you hoping to write?</span>
+              <textarea id="onboard-ai-goal" rows="2" maxlength="2000" data-testid="onboard-ai-goal" data-i18n-placeholder="onboard.ai.writingGoalPlaceholder"></textarea>
+            </label>
+            <label class="wc__field" for="onboard-ai-audience" data-testid="onboard-ai-audience-field">
+              <span data-i18n="onboard.ai.audience" data-testid="onboard-ai-audience-label">Who are you writing for?</span>
+              <input id="onboard-ai-audience" maxlength="500" data-testid="onboard-ai-audience" data-i18n-placeholder="onboard.ai.audiencePlaceholder" />
+            </label>
+            <label class="wc__field" for="onboard-ai-projects" data-testid="onboard-ai-projects-field">
+              <span data-i18n="onboard.ai.projects" data-testid="onboard-ai-projects-label">What projects are you working on?</span>
+              <input id="onboard-ai-projects" maxlength="2000" data-testid="onboard-ai-projects" data-i18n-placeholder="onboard.ai.projectsPlaceholder" />
+            </label>
+            <label class="wc__field" for="onboard-ai-avoid" data-testid="onboard-ai-avoid-field">
+              <span data-i18n="onboard.ai.avoid" data-testid="onboard-ai-avoid-label">Any subjects UnoWord should avoid?</span>
+              <input id="onboard-ai-avoid" maxlength="1000" data-testid="onboard-ai-avoid" data-i18n-placeholder="onboard.ai.avoidPlaceholder" />
+            </label>
+          </div>
+          <div class="wc__privacy-note" data-testid="onboard-ai-privacy-note">
+            <span class="wc__privacy-icon" aria-hidden="true">◎</span>
+            <div>
+              <p class="wc__privacy-title" data-i18n="onboard.ai.privacyTitle" data-testid="onboard-ai-privacy-title">Private context, not model training</p>
+              <p class="wc__privacy-copy" data-i18n="onboard.ai.privacy" data-testid="onboard-ai-privacy-copy">UnoWord uses what you provide to build your private writing context. This draft stays on this device until you choose to sync it.</p>
+            </div>
+          </div>
+          <button class="wc__link-btn wc__ai-skip" id="onboard-ai-skip" type="button" data-testid="onboard-ai-skip" data-i18n="onboard.ai.skip">Skip for now</button>
+        </div>
+
+        <div class="wc__pro-onboard-step" data-step="done" id="pro-step-done" data-testid="pro-step-done" hidden>
+          <h2 class="wc__title" data-i18n="onboard.done.title">You're all set.</h2>
+          <p class="wc__helper" data-i18n="onboard.done.sub">Your first prompt is waiting inside.</p>
+        </div>
+
+        <button class="wc__btn wc__btn--primary" id="pro-onboard-next" data-testid="pro-onboard-next" data-i18n="onboard.continue">Continue</button>
+      </section>
+
+      <!-- ================= PROGRESS (in-popup) ================= -->
+      <section class="wc__panel wc__progress" id="progress-panel" data-testid="progress-panel" hidden>
+        <button class="wc__back" id="progress-back" data-testid="progress-back" data-i18n-aria="nav.back" aria-label="Back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          <span data-i18n="nav.back">Back</span>
+        </button>
+        <h2 class="wc__eyebrow" data-i18n="progress.title">Your writing progress</h2>
+
+        <div class="wc__streak" id="progress-streak" data-testid="progress-streak" hidden>
+          <svg class="wc__streak-flame" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c1 3-1 5-2 6-1.5 1.5-3 3-3 6a5 5 0 0 0 10 0c0-2-1-3-1-4 2 1 3 3 3 5a7 7 0 1 1-14 0c0-4 3-6 4-8 1-1.5 2-3 3-5z"/></svg>
+          <span id="progress-streak-text" data-testid="progress-streak-text"></span>
+        </div>
+
+        <nav class="wc__range-tabs" id="progress-tabs" data-testid="progress-tabs" role="tablist">
+          <button class="wc__range-tab" data-range="today" data-testid="prog-tab-today" data-i18n="dash.tabs.today">Today</button>
+          <button class="wc__range-tab" data-range="week"  data-testid="prog-tab-week"  data-i18n="dash.tabs.week">This week</button>
+          <button class="wc__range-tab" data-range="month" data-testid="prog-tab-month" data-i18n="dash.tabs.month">This month</button>
+          <button class="wc__range-tab" data-range="year"  data-testid="prog-tab-year"  data-i18n="dash.tabs.year">This year</button>
+          <button class="wc__range-tab" data-range="all"   data-testid="prog-tab-all"   data-i18n="dash.tabs.all">All time</button>
+        </nav>
+
+        <div class="wc__prog-cards">
+          <div class="wc__prog-card">
+            <p class="wc__prog-card-label" id="prog-primary-sub" data-testid="prog-primary-sub"></p>
+            <p class="wc__prog-card-value" id="prog-primary" data-testid="prog-primary">0</p>
+            <p class="wc__prog-card-unit" data-i18n="session.words">words</p>
+          </div>
+          <div class="wc__prog-card">
+            <p class="wc__prog-card-label" data-i18n="progress.sessions">Sessions</p>
+            <p class="wc__prog-card-value" id="prog-sessions" data-testid="prog-sessions">0</p>
+            <p class="wc__prog-card-unit" id="prog-progress" data-testid="prog-progress"></p>
+          </div>
+        </div>
+
+        <div class="wc__prog-chart-card" id="prog-chart-card" data-testid="prog-chart-card">
+          <p class="wc__prog-chart-title" data-i18n="progress.activity">Writing activity</p>
+          <div class="wc__prog-chart" id="prog-chart" data-testid="prog-chart"></div>
+          <p class="wc__prog-chart-empty" id="prog-chart-empty" data-i18n="dash.noData" hidden>No writing recorded yet in this range.</p>
+        </div>
+
+        <div class="wc__prog-paywall" id="prog-paywall" data-testid="prog-paywall" hidden>
+          <p class="wc__setting-label" data-i18n="dash.free.banner">Unlock this dashboard with Pro</p>
+          <p class="wc__helper" data-i18n="dash.free.bannerSub">Daily prompts, writing goals, and history at a glance.</p>
+          <button class="wc__btn wc__btn--outline wc__btn--sm" id="prog-upgrade" data-testid="prog-upgrade" data-i18n="upgrade.cta.btn">Upgrade</button>
+        </div>
+
+        <button class="wc__btn wc__btn--outline" id="prog-history" data-testid="prog-history" data-i18n="progress.history">History</button>
+      </section>
+
+      <!-- ================= HISTORY ================= -->
+      <section class="wc__panel wc__history" id="history-panel" data-testid="history-panel" hidden>
+        <button class="wc__back" id="history-back" data-testid="history-back" data-i18n-aria="nav.back" aria-label="Back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          <span data-i18n="nav.back">Back</span>
+        </button>
+        <h2 class="wc__eyebrow" data-i18n="history.title">Writing history</h2>
+        <p class="wc__title wc__title--sm" id="history-summary" data-testid="history-summary"></p>
+        <div class="wc__history-list" id="history-list" data-testid="history-list" role="list"></div>
+        <div class="wc__history-empty" id="history-empty" data-testid="history-empty" hidden>
+          <p data-i18n="history.empty1">Your completed sessions will appear here.</p>
+          <p class="wc__footnote" data-i18n="history.empty2">Kept locally on this device only.</p>
+        </div>
+
+        <!-- Free users: 24h visibility notice + upgrade -->
+        <div class="wc__history-limit" id="history-limit" data-testid="history-limit" hidden>
+          <p class="wc__setting-label" data-i18n="history.free.title">Your recent sessions</p>
+          <p class="wc__helper" data-i18n="history.free.body">Free accounts can view the past 24 hours. Upgrade to keep and view your complete writing history.</p>
+          <button class="wc__btn wc__btn--outline wc__btn--sm" id="history-upgrade" data-testid="history-upgrade" data-i18n="upgrade.cta.btn">Upgrade</button>
+        </div>
+
+        <!-- Pro users: CSV + clear -->
+        <div class="wc__history-actions" id="history-actions" data-testid="history-actions" hidden>
+          <button class="wc__link-btn" id="history-export" data-testid="history-export" data-i18n="history.export">Export CSV</button>
+          <button class="wc__link-btn" id="history-import" data-testid="history-import" data-i18n="history.import">Import CSV</button>
+          <button class="wc__link-btn wc__link-btn--danger" id="history-clear" data-testid="history-clear" data-i18n="history.clear">Clear history</button>
+          <input type="file" id="history-file" data-testid="history-file" accept=".csv,text/csv" hidden />
+        </div>
+      </section>
+
+      <!-- ================= FEEDBACK ================= -->
+      <section class="wc__panel wc__feedback" id="feedback-panel" data-testid="feedback-panel" hidden>
+        <button class="wc__back" id="feedback-back" data-testid="feedback-back" data-i18n-aria="nav.back" aria-label="Back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          <span data-i18n="nav.back">Back</span>
+        </button>
+        <h2 class="wc__eyebrow" data-i18n="feedback.title">Send feedback</h2>
+        <p class="wc__helper" data-i18n="feedback.sub">We'd love to hear from you.</p>
+        <div class="wc__feedback-types" id="feedback-types" data-testid="feedback-types">
+          <button class="wc__chip" type="button" data-type="bug" data-testid="feedback-type-bug" data-i18n="feedback.bug">Bug</button>
+          <button class="wc__chip" type="button" data-type="feature" data-testid="feedback-type-feature" data-i18n="feedback.feature">Feature Request</button>
+          <button class="wc__chip" type="button" data-type="suggestion" data-testid="feedback-type-suggestion" data-i18n="feedback.suggestion">Suggestion</button>
+          <button class="wc__chip" type="button" data-type="other" data-testid="feedback-type-other" data-i18n="feedback.other">Other</button>
+        </div>
+        <textarea class="wc__textarea" id="feedback-message" data-testid="feedback-message" rows="5" data-i18n-placeholder="feedback.placeholder"></textarea>
+        <p class="wc__error" id="feedback-error" data-testid="feedback-error" hidden></p>
+        <button class="wc__btn wc__btn--primary" id="feedback-send" data-testid="feedback-send" data-i18n="feedback.send">Send Feedback</button>
+        <p class="wc__footnote" data-i18n="feedback.note">Opens your email app. Your writing is never included.</p>
+      </section>
+
+      <!-- ================= SETTINGS ================= -->
+      <section class="wc__panel wc__settings" id="settings-panel" data-testid="settings-panel" hidden>
+        <button class="wc__back" id="settings-back" data-testid="settings-back" data-i18n-aria="nav.back" aria-label="Back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          <span data-i18n="nav.back">Back</span>
+        </button>
+        <h2 class="wc__eyebrow" data-i18n="settings.title">Settings</h2>
+
+        <!-- Writing group -->
+        <div class="wc__setting-group">
+          <p class="wc__setting-group-title" data-i18n="settings.writing">Writing</p>
+          <div class="wc__setting-row" id="row-goal" data-testid="row-goal">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label"><span data-i18n="settings.goalRow">Writing goal</span> <span class="wc__pro-badge wc__pro-badge--sm" id="goal-pro-badge" data-i18n="badge.pro">PRO</span></p>
+              <p class="wc__setting-meta" id="goal-meta"></p>
+            </div>
+            <button class="wc__link-btn" id="edit-goal" data-testid="edit-goal" data-i18n="settings.edit">Edit</button>
+          </div>
+          <div class="wc__setting-editor" id="goal-editor" data-testid="goal-editor" hidden>
+            <div class="wc__goal-input">
+              <input type="number" inputmode="numeric" min="25" step="25" id="goal-input" data-testid="goal-input" />
+              <span class="wc__goal-unit" data-i18n="session.words">words</span>
+            </div>
+            <p class="wc__helper" data-i18n="onboard.goal.rule">Your goal must be in increments of 25 words.</p>
+            <p class="wc__error" id="goal-error" data-testid="goal-error" hidden></p>
+            <button class="wc__btn wc__btn--primary wc__btn--sm" id="save-goal" data-testid="save-goal" data-i18n="settings.save">Save</button>
+          </div>
+
+          <div class="wc__setting-row" id="row-themes" data-testid="row-themes">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label"><span data-i18n="settings.themesRow">Prompt themes</span> <span class="wc__pro-badge wc__pro-badge--sm" id="themes-pro-badge" data-i18n="badge.pro">PRO</span></p>
+              <p class="wc__setting-meta" id="themes-meta"></p>
+            </div>
+            <button class="wc__link-btn" id="edit-themes" data-testid="edit-themes" data-i18n="settings.edit">Edit</button>
+          </div>
+          <div class="wc__setting-editor" id="themes-editor" data-testid="themes-editor" hidden>
+            <div class="wc__theme-grid" id="settings-themes"></div>
+            <p class="wc__error" id="themes-error" data-testid="themes-error" hidden></p>
+            <button class="wc__btn wc__btn--primary wc__btn--sm" id="save-themes" data-testid="save-themes" data-i18n="settings.save">Save</button>
+          </div>
+        </div>
+
+        <!-- Writing History group -->
+        <div class="wc__setting-group">
+          <p class="wc__setting-group-title" data-i18n="settings.historyGroup">Writing history</p>
+          <div class="wc__setting-row" id="row-history" data-testid="row-history">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label"><span data-i18n="settings.historyRow">History</span> <span class="wc__pro-badge wc__pro-badge--sm" id="history-pro-badge" data-i18n="badge.pro">PRO</span></p>
+              <p class="wc__setting-meta" id="history-meta"></p>
+            </div>
+            <button class="wc__link-btn" id="settings-open-history" data-testid="settings-open-history" data-i18n="settings.manage">Manage</button>
+          </div>
+        </div>
+
+        <!-- Appearance group -->
+        <div class="wc__setting-group">
+          <p class="wc__setting-group-title" data-i18n="settings.appearance">Appearance</p>
+          <div class="wc__setting-row" id="row-language">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label" data-i18n="settings.language">Language</p>
+              <p class="wc__setting-meta" id="language-meta"></p>
+            </div>
+            <button class="wc__link-btn" id="edit-language" data-testid="edit-language" data-i18n="settings.edit">Edit</button>
+          </div>
+          <div class="wc__setting-editor" id="language-editor" hidden>
+            <div class="wc__choices">
+              <button class="wc__choice" data-lang="en" data-testid="settings-lang-en">
+                <span class="wc__choice-title">English</span>
+              </button>
+              <button class="wc__choice" data-lang="es" data-testid="settings-lang-es">
+                <span class="wc__choice-title">Español</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account group -->
+        <div class="wc__setting-group">
+          <p class="wc__setting-group-title" data-i18n="settings.account">Account</p>
+          <div class="wc__setting-row" data-testid="account-status-row">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label" data-i18n="account.aiTitle" data-testid="account-ai-title">UnoWord AI</p>
+              <p class="wc__setting-meta" id="account-meta" data-testid="account-meta"></p>
+            </div>
+            <button class="wc__link-btn" id="account-action" data-testid="account-action"></button>
+          </div>
+          <div class="wc__setting-editor wc__auth-editor" id="account-editor" data-testid="account-editor" hidden>
+            <p class="wc__helper" data-i18n="account.required" data-testid="account-required">You need to sign in and have an eligible plan to access UnoWord AI.</p>
+            <label class="wc__field" for="account-email" data-testid="account-email-field">
+              <span data-i18n="account.email" data-testid="account-email-label">Email</span>
+              <input type="email" id="account-email" autocomplete="email" data-testid="account-email" data-i18n-placeholder="account.emailPlaceholder" />
+            </label>
+            <label class="wc__field" for="account-password" data-testid="account-password-field">
+              <span data-i18n="account.password" data-testid="account-password-label">Password</span>
+              <input type="password" id="account-password" minlength="8" autocomplete="current-password" data-testid="account-password" data-i18n-placeholder="account.passwordPlaceholder" />
+            </label>
+            <p class="wc__error" id="account-error" data-testid="account-error" hidden></p>
+            <div class="wc__auth-actions" data-testid="account-auth-actions">
+              <button class="wc__btn wc__btn--primary wc__btn--sm" id="account-sign-in" data-testid="account-sign-in" data-i18n="account.signIn">Sign in</button>
+              <button class="wc__link-btn" id="account-create" data-testid="account-create" data-i18n="account.create">Create account</button>
+            </div>
+            <p class="wc__footnote" data-i18n="account.cookiePrivacy" data-testid="account-cookie-privacy">Your session is kept in a secure cookie. UnoWord never stores your password.</p>
+          </div>
+          <div class="wc__setting-row" data-testid="plan-setting-row">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label" data-i18n="settings.plan">Plan</p>
+              <p class="wc__setting-meta" id="plan-meta"></p>
+            </div>
+            <button class="wc__link-btn" id="plan-action" data-testid="plan-action"></button>
+          </div>
+        </div>
+
+        <!-- AI profile is hidden until the backend confirms auth + entitlement. -->
+        <div class="wc__setting-group" id="ai-settings-group" data-testid="ai-settings-group" hidden>
+          <p class="wc__setting-group-title" data-i18n="aiSettings.title" data-testid="ai-settings-title">AI Writing Coach</p>
+          <div class="wc__setting-row" data-testid="ai-profile-row">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label" data-i18n="aiSettings.profile" data-testid="ai-profile-label">Private writing profile</p>
+              <p class="wc__setting-meta" id="ai-profile-meta" data-testid="ai-profile-meta"></p>
+            </div>
+            <button class="wc__link-btn" id="ai-profile-action" data-testid="ai-profile-action"></button>
+          </div>
+          <div class="wc__setting-row" data-testid="ai-memory-row">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label" data-i18n="memory.settings.title" data-testid="ai-memory-label">Writing memory</p>
+              <p class="wc__setting-meta" id="ai-memory-meta" data-testid="ai-memory-meta"></p>
+            </div>
+            <button class="wc__link-btn" id="ai-memory-manage" data-testid="ai-memory-manage" data-i18n="settings.manage">Manage</button>
+          </div>
+          <div class="wc__setting-editor wc__memory-manager" id="ai-memory-editor" data-testid="ai-memory-editor" hidden>
+            <button class="wc__btn wc__btn--outline wc__btn--sm" id="memory-always-toggle" data-testid="memory-always-toggle"></button>
+            <button class="wc__link-btn" id="memory-claim-queue" data-testid="memory-claim-queue" data-i18n="memory.settings.claim">Attach pre-login writing</button>
+            <button class="wc__link-btn" id="memory-sync-queue" data-testid="memory-sync-queue" data-i18n="memory.settings.sync">Sync queued writing</button>
+            <button class="wc__link-btn wc__link-btn--danger" id="memory-delete-synced" data-testid="memory-delete-synced" data-i18n="memory.settings.deleteSynced">Delete synced device copies</button>
+            <p class="wc__memory-manager-note" id="memory-manager-note" data-testid="memory-manager-note"></p>
+          </div>
+          <div class="wc__setting-row" data-testid="ai-documents-row">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label" data-i18n="documents.title" data-testid="ai-documents-label">Private documents</p>
+              <p class="wc__setting-meta" id="ai-documents-meta" data-testid="ai-documents-meta"></p>
+            </div>
+            <button class="wc__link-btn" id="ai-documents-manage" data-testid="ai-documents-manage" data-i18n="settings.manage">Manage</button>
+          </div>
+          <div class="wc__setting-editor wc__documents-manager" id="ai-documents-editor" data-testid="ai-documents-editor" hidden>
+            <p class="wc__helper" data-i18n="documents.helper" data-testid="documents-helper">Upload TXT, Markdown, PDF, or DOCX files. UnoWord extracts text privately; scanned PDFs are not supported yet.</p>
+            <input type="file" id="document-file" data-testid="document-file" accept=".txt,.md,.markdown,.pdf,.docx,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+            <label class="wc__field" for="document-title" data-testid="document-title-field">
+              <span data-i18n="documents.documentTitle" data-testid="document-title-label">Document title</span>
+              <input id="document-title" maxlength="300" data-testid="document-title" data-i18n-placeholder="documents.titlePlaceholder" />
+            </label>
+            <label class="wc__field" for="document-type" data-testid="document-type-field">
+              <span data-i18n="documents.documentType" data-testid="document-type-label">Document type</span>
+              <select id="document-type" data-testid="document-type">
+                <option value="memoir" data-i18n="documents.type.memoir">Memoir</option>
+                <option value="journal" data-i18n="documents.type.journal">Journal</option>
+                <option value="book" data-i18n="documents.type.book">Book</option>
+                <option value="research" data-i18n="documents.type.research">Research</option>
+                <option value="outline" data-i18n="documents.type.outline">Outline</option>
+                <option value="notes" data-i18n="documents.type.notes">Notes</option>
+                <option value="personal_history" data-i18n="documents.type.personal_history">Personal history</option>
+                <option value="reference" data-i18n="documents.type.reference">Reference</option>
+                <option value="other" data-i18n="documents.type.other" selected>Other</option>
+              </select>
+            </label>
+            <button class="wc__btn wc__btn--primary wc__btn--sm" id="document-upload" data-testid="document-upload" data-i18n="documents.upload">Upload privately</button>
+            <p class="wc__error" id="document-error" data-testid="document-error" hidden></p>
+            <p class="wc__memory-manager-note" id="document-upload-status" data-testid="document-upload-status" hidden></p>
+            <div class="wc__document-list" id="document-list" data-testid="document-list"></div>
+            <p class="wc__memory-manager-note" id="document-empty" data-testid="document-empty" data-i18n="documents.empty">No private documents uploaded yet.</p>
+          </div>
+          <p class="wc__footnote" data-i18n="aiSettings.syncNote" data-testid="ai-settings-sync-note">After your first confirmation, future profile edits sync automatically. Writing sessions are never uploaded automatically.</p>
+        </div>
+
+        <!-- Support group -->
+        <div class="wc__setting-group">
+          <p class="wc__setting-group-title" data-i18n="settings.support">Support</p>
+          <div class="wc__setting-row" id="row-feedback" data-testid="row-feedback">
+            <div class="wc__setting-row-main">
+              <p class="wc__setting-label" data-i18n="settings.feedback">Send feedback</p>
+              <p class="wc__setting-meta" data-i18n="settings.feedbackMeta">Tell us what to improve</p>
+            </div>
+            <button class="wc__link-btn" id="open-feedback" data-testid="open-feedback" data-i18n="settings.open">Open</button>
+          </div>
+        </div>
+
+        <p class="wc__footnote" id="settings-privacy" data-testid="settings-privacy" data-i18n="settings.privacy">Your writing never leaves this device.</p>
+      </section>
+
+      <!-- ================= DIALOGS ================= -->
+      <div class="wc__dialog-backdrop" id="dialog-backdrop" data-testid="dialog-backdrop" hidden>
+        <div class="wc__dialog" id="dialog-import" data-testid="dialog-import" hidden>
+          <h3 class="wc__dialog-title" data-i18n="import.title">Import writing history</h3>
+          <p class="wc__dialog-sub" id="import-summary" data-testid="import-summary"></p>
+          <div class="wc__choices">
+            <button class="wc__choice" data-mode="merge" data-testid="import-merge" aria-checked="true">
+              <span class="wc__choice-title" data-i18n="import.merge">Merge with existing history</span>
+            </button>
+            <button class="wc__choice" data-mode="replace" data-testid="import-replace" aria-checked="false">
+              <span class="wc__choice-title" data-i18n="import.replace">Replace existing history</span>
+            </button>
+          </div>
+          <p class="wc__error" id="import-error" data-testid="import-error" hidden></p>
+          <div class="wc__dialog-actions">
+            <button class="wc__btn wc__btn--ghost wc__btn--sm" id="import-cancel" data-testid="import-cancel" data-i18n="dialog.cancel">Cancel</button>
+            <button class="wc__btn wc__btn--primary wc__btn--sm" id="import-continue" data-testid="import-continue" data-i18n="dialog.continue">Continue</button>
+          </div>
+        </div>
+
+        <div class="wc__dialog" id="dialog-confirm" data-testid="dialog-confirm" hidden>
+          <h3 class="wc__dialog-title" id="confirm-title" data-testid="confirm-title"></h3>
+          <p class="wc__dialog-sub" id="confirm-body" data-testid="confirm-body"></p>
+          <div class="wc__dialog-actions">
+            <button class="wc__btn wc__btn--ghost wc__btn--sm" id="confirm-cancel" data-testid="confirm-cancel" data-i18n="dialog.cancel">Cancel</button>
+            <button class="wc__btn wc__btn--danger wc__btn--sm" id="confirm-ok" data-testid="confirm-ok"></button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <script src="../shared/i18n.js"></script>
+    <script src="../shared/prompts.js"></script>
+    <script src="../shared/history.js"></script>
+    <script src="../shared/ai-profile.js"></script>
+    <script src="../shared/api-client.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

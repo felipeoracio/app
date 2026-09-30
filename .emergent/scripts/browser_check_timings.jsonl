@@ -1,0 +1,1 @@
+{"ts": "2026-09-29T18:43:45", "name": "extension-core-wordcount-session", "mode": "ran-inline", "url": "http://localhost:8910/tests/preview.html", "passed": true, "total_ms": 2249, "pw_import_ms": 314, "launch_ms": 1223, "first_goto_ms": 25, "body_ms": 375, "body_gotos": []}
