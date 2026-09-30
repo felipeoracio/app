@@ -110,3 +110,12 @@
 - **Refactor (pluggable, no behavior change)**: introduced a processor registry — `DocumentProcessor` base + `TextProcessor`/`PdfProcessor`/`DocxProcessor`, `register_processor()` and `supported_extensions()`. `extract_document()` now only dispatches by extension. A new format (RTF, or a future OCR/image processor) plugs in by subclassing + registering — no change to the dispatcher, router, storage, chunking, or embedding flow. All constants (`MAX_UPLOAD_BYTES`, `MAX_PDF_PAGES`, `MIME_BY_EXTENSION`) and error messages preserved.
 - **OCR/images intentionally NOT implemented** (no such infrastructure); images/unknown formats reject with "Supported formats … Images/scanned documents need a future OCR processor".
 - **Verified**: `tests/test_phase16_pipeline.py` (default processors registered, images/unknown rejected, a new `.unotest` processor plugs in and dispatches). Full backend suite 36 passed. Live `.md` upload processed to `ready` (text/markdown) end-to-end.
+
+## Phase 17 — User Experience: AI onboarding flow (2026-06)
+- **Inspection**: the paid onboarding already had a dedicated AI step (step 4 of 5, `pro-step-ai`) with the 8 questions, a privacy note, and Skip. Phase-17 gaps were copy/UX only.
+- **Changes (copy/UX, no redesign, reuse existing `wc__privacy-note` styling)** in `extension/popup/popup.html` + `shared/i18n.js` (EN+ES):
+  - Welcome heading → "Welcome to UnoWord AI" + subtitle "Let's get to know your writing. Share only what you'd like — it's optional."
+  - Reworded the open reflection question to "What experiences have shaped your perspective — or anything else UnoWord should understand?" (maps to `personal_context`).
+  - Added a **document-upload explainer** box (`onboard-ai-upload-note/title/copy`): you can upload PDF/Word/text/Markdown in AI settings to give UnoWord more context.
+  - **Exact privacy wording**: "UnoWord uses the information you provide to build your private writing context and personalize suggestions." + "It does not train the underlying AI model on your personal information." + the local-draft note.
+- **Verified**: i18n valid, EN/ES parity for new keys, new testids present, all 5 extension test suites pass. (Extension isn't browser-loadable here — verified by inspection + syntax/tests; reload at chrome://extensions to see it.)
