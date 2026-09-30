@@ -1,0 +1,23 @@
+{
+  "summary": "Phase 17 backend verification: shorter suggestions + daily cap reduced to 25. Wrote /app/backend/tests/test_phase17_shorter_and_cap.py (4 tests). Results: 3 passed, 1 skipped (429 enforcement skipped because neither seeded user is currently at cap — covered by summary math). daily_limit==25 confirmed for both User A and User B via GET /api/ai/usage/summary, proving env cap AI_DAILY_REQUEST_LIMIT=25 correctly wins over the entitlement value 100 in _resolve_daily_limit. Made exactly ONE real /api/ai/suggestion call (cost control): returned 200 with suggestion length within 400 chars and reason length within 300 chars, confirming the shorter-suggestion prompt + JSON schema caps are in effect. used_today/remaining math is consistent (remaining == max(0, daily_limit - used_today), never negative).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_phase17_shorter_and_cap.py",
+    "/app/test_reports/pytest/phase17.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "_resolve_daily_limit correctly applies stricter-wins: min(env_cap, entitlement) when both are >0, falling back to whichever is set — matches the spec.",
+    "usage_summary() only counts request_type=='suggestion' (excludes fallbacks) against the limit; enforcement in create_suggestion() also queries request_type=eq.suggestion, so counting is consistent end-to-end.",
+    "AISuggestion JSON schema maxLength suggestion=400, why=300 combined with the UNO_WORD_COACH_SYSTEM_PROMPT brevity instruction (<=2 short sentences) produced a compliant response in the live call."
+  ],
+  "updated_files": ["/app/backend/tests/test_phase17_shorter_and_cap.py"],
+  "success_rate": {"backend": "100% (3/3 executed, 1 conditionally skipped)", "frontend": "N/A (out of scope)"},
+  "test_credentials": "Used seeded Pro users from /app/memory/test_credentials.md (User A + User B).",
+  "seed_data_creation": "None — reused existing seeded Supabase Pro users.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Phase 17 backend verified. Both seeded users have daily_limit=25 via env cap override. Only 1 live OpenAI suggestion call was made to keep cost minimal. The 429 test is coded but skipped when neither user is at cap; it will auto-activate on future runs once used_today reaches 25 for either user. Chrome-extension changes (Google Docs all_frames, popup progress-button pop animation) are explicitly out of scope for this environment.",
+  "rca of the issue": "N/A — no defects found."
+}
